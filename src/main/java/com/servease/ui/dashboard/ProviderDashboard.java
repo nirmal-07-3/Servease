@@ -24,31 +24,11 @@ public class ProviderDashboard extends JFrame {
 
         JButton btn=new JButton("My Services");
         add(btn);
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ServiceController serviceController=new ServiceController();
+        btn.addActionListener(e ->  {
+            new ProviderServicesFrame(user);
 
-                List<Service> services=serviceController.getServicesByProviderId(user.getId());
 
-                if(services.isEmpty()){
-                    JOptionPane.showMessageDialog(null,"No Service Found");
-                }
-                else{
-                    StringBuilder sb=new StringBuilder();
+                              });
 
-                    for(Service s: services){
-                        sb.append("ID: ").append(s.getId());
-                        sb.append(",Name: ").append(s.getName());
-                        sb.append(",Price: ").append(s.getPrice());
-                        sb.append(",\n\n");
-
-                    }
-                    JOptionPane.showMessageDialog(null,sb.toString());
-                }
-            }
-        }
-
-        );
     }
 }

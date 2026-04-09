@@ -102,7 +102,7 @@ public class ServiceDAO {
 
         try{
             Connection conn=DBConnection.getConnection();
-            String query="DELETE FROM services WHERE service_id=?";
+            String query="DELETE FROM services WHERE id=?";
             PreparedStatement ps=conn.prepareStatement(query);
             ps.setInt(1,service_id);
 

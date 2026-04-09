@@ -39,6 +39,15 @@ public class ServiceManager {
         }
        return servicedao.getServicesByProviderId(provider_id);
    }
+
+    public boolean deleteService(int service_id){
+        if(service_id<=0){
+            System.out.println("Invalid Service Id");
+            return false;
+        }
+        return serviceDAO.deleteService(service_id);
+    }
+
 }
 
 
