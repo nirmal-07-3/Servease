@@ -1,0 +1,47 @@
+package com.servease.service;
+
+import com.servease.dao.ServiceDAO;
+import com.servease.model.Service;
+
+import java.util.List;
+
+public class ServiceManager {
+
+    private ServiceDAO serviceDAO = new ServiceDAO();
+
+    //Validation
+
+    public boolean addService(Service service) {
+
+
+        if (service.getName() == null || service.getName().isEmpty() || service.getDescription() == null || service.getDescription().isEmpty() || service.getPrice() < 0
+                || service.getProvider_id() <= 0) {
+            System.out.println("Details are Not Valid");
+            return false;
+        }
+        List<Service> existingServices =
+                serviceDAO.getServicesByProviderId(service.getProvider_id());
+
+        for (Service s : existingServices) {
+            if (s.getName().equalsIgnoreCase(service.getName())) {
+                System.out.println("Service already exists!");
+                return false;
+            }
+        }
+
+
+        return serviceDAO.addService(service);
+    }
+   public List<Service> getServicesByProviderId(int provider_id){
+        ServiceDAO servicedao=new ServiceDAO();
+        if (provider_id<=0){
+            return null;
+        }
+       return servicedao.getServicesByProviderId(provider_id);
+   }
+}
+
+
+
+
+
