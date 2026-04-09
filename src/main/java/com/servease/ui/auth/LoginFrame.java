@@ -60,7 +60,7 @@ public class LoginFrame extends JFrame {
                     if(user.getRole().equals("USER")){
                         new UserDashboard(user);
                     } else if (user.getRole().equals("PROVIDER")) {
-                        new ProviderDashboard(user);
+                        new ProviderDashboard  (user);
                     }
                     else {
                         new AdminDashboard(user);
