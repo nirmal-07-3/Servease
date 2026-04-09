@@ -26,7 +26,7 @@ public class ProviderServicesFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // 🔹 Table Columns
-        String[] columns = {"ID", "Name", "Price", "Delete"};
+        String[] columns = {"ID", "Name", "Price","Edit", "Delete"};
 
         model = new DefaultTableModel(columns, 0);
         table = new JTable(model);
@@ -37,8 +37,33 @@ public class ProviderServicesFrame extends JFrame {
 
         loadServices();
 
+        //Edit Button
+        JButton editBtn=new JButton("Edit");
+        editBtn.setBounds(50,300,150,40);
+        add(editBtn);
+
+        editBtn.addActionListener(e -> {
+            int row=table.getSelectedRow();
+            if(row==-1){
+                JOptionPane.showMessageDialog(null,"Select a row First");
+                return;
+            }
+            int id=(int)model.getValueAt(row,0);
+            String name = (String) model.getValueAt(row, 1);
+            double price = (double) model.getValueAt(row, 2);
+
+            // Temporary (no description in table)
+            Service service = new Service(id, user.getId(), name, "", price);
+
+            new UpdateServiceFrame(service);
+
+            loadServices(); // refresh after edit
+
+        });
+
+
         // 🔥 DELETE BUTTON ACTION
-        JButton deleteBtn = new JButton("Delete Selected");
+        JButton deleteBtn = new JButton("Delete Service");
         deleteBtn.setBounds(200, 300, 180, 40);
         add(deleteBtn);
 
@@ -61,6 +86,7 @@ public class ProviderServicesFrame extends JFrame {
                     s.getId(),
                     s.getName(),
                     s.getPrice(),
+                    "Edit",
                     "Delete"
             });
         }
@@ -89,4 +115,9 @@ public class ProviderServicesFrame extends JFrame {
             JOptionPane.showMessageDialog(this, "Delete Failed");
         }
     }
+
+    //Edit logic
+
+
+
 }

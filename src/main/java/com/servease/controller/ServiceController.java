@@ -27,4 +27,8 @@ public class ServiceController {
 
         return serviceManager.deleteService(service_id);
     }
+    public boolean updateService(Service service){
+
+        return serviceManager.updateService(service);
+    }
 }

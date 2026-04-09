@@ -1,4 +1,4 @@
-package com.servease.ui.auth;
+package com.servease.ui.dashboard;
 
 import com.servease.controller.ServiceController;
 

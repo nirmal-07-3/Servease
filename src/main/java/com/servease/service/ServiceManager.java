@@ -48,6 +48,14 @@ public class ServiceManager {
         return serviceDAO.deleteService(service_id);
     }
 
+    public boolean updateService(Service service){
+        if(service.getName().isEmpty()||service.getPrice()<=0){
+            System.out.println("Invalid data!");
+            return false;
+        }
+        return serviceDAO.updateService(service);
+    }
+
 }
 
 

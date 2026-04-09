@@ -19,6 +19,16 @@ public class Service {
     public Service() {
     }
 
+    public Service(int id, int provider_id, String name, String description, double price)
+    {
+        this.id=id;
+        this.provider_id = provider_id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+
+    }
+
     public int getId() {
         return id;
     }
