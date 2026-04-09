@@ -17,7 +17,7 @@ public class User {
         this.email = email;
         this.password = password;
         this.phone=phone;
-        this.role = role;
+        
     }
     public User(int id,String name, String email, String password,String phone, String role) {
         this.id=id;
