@@ -2,21 +2,24 @@ package com.servease.ui.dashboard;
 
 import com.servease.controller.ServiceController;
 import com.servease.model.Service;
+import com.servease.ui.dashboard.ProviderServicesFrame;
 
 import javax.swing.*;
 
 public class UpdateServiceFrame extends JFrame {
 
-    private JTextField nameField, priceField;
-    private JTextArea descArea;
     private Service service;
+    private ProviderServicesFrame parent;
 
-    public UpdateServiceFrame(Service service) {
+    private JTextField nameField, priceField;
+
+    public UpdateServiceFrame(Service service, ProviderServicesFrame parent) {
 
         this.service = service;
+        this.parent = parent;
 
         setTitle("Update Service");
-        setSize(400, 300);
+        setSize(400, 250);
         setLayout(null);
 
         JLabel nameLabel = new JLabel("Name:");
@@ -27,43 +30,31 @@ public class UpdateServiceFrame extends JFrame {
         nameField.setBounds(130, 30, 200, 25);
         add(nameField);
 
-        JLabel descLabel = new JLabel("Description:");
-        descLabel.setBounds(30, 70, 100, 25);
-        add(descLabel);
-
-        descArea = new JTextArea(service.getDescription());
-        descArea.setBounds(130, 70, 200, 60);
-        add(descArea);
-
         JLabel priceLabel = new JLabel("Price:");
-        priceLabel.setBounds(30, 150, 100, 25);
+        priceLabel.setBounds(30, 80, 100, 25);
         add(priceLabel);
 
         priceField = new JTextField(String.valueOf(service.getPrice()));
-        priceField.setBounds(130, 150, 200, 25);
+        priceField.setBounds(130, 80, 200, 25);
         add(priceField);
 
         JButton updateBtn = new JButton("Update");
-        updateBtn.setBounds(130, 200, 120, 30);
+        updateBtn.setBounds(130, 140, 120, 30);
         add(updateBtn);
 
-        // 🔥 UPDATE LOGIC
         updateBtn.addActionListener(e -> {
 
-            String name = nameField.getText();
-            String desc = descArea.getText();
-            double price = Double.parseDouble(priceField.getText());
-
-            service.setName(name);
-            service.setDescription(desc);
-            service.setPrice(price);
+            service.setName(nameField.getText());
+            service.setPrice(Double.parseDouble(priceField.getText()));
 
             ServiceController controller = new ServiceController();
-
             boolean result = controller.updateService(service);
 
             if (result) {
                 JOptionPane.showMessageDialog(this, "Updated Successfully");
+
+                parent.loadServices(); // 🔥 refresh
+
                 this.dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Update Failed");

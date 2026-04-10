@@ -1,85 +1,83 @@
 package com.servease.ui.dashboard;
 
+
 import com.servease.controller.ServiceController;
+import com.servease.model.Service;
+import com.servease.model.User;
+import com.servease.ui.dashboard.ProviderServicesFrame;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class AddServiceFrame extends JFrame {
 
-    JTextField nameField, priceField;
-    JTextArea descriptionArea;
-    JButton addButton;
+    private User user;
+    private ProviderServicesFrame parent;
 
-    int providerId = 1; // 🔥 TEMP (later dynamic)
+    private JTextField nameField, priceField;
+    private JTextArea descArea;
 
-    public AddServiceFrame() {
+    public AddServiceFrame(User user, ProviderServicesFrame parent) {
+
+        this.user = user;
+        this.parent = parent;
 
         setTitle("Add Service");
-        setSize(400, 400);
+        setSize(400, 300);
         setLayout(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JLabel nameLabel = new JLabel("Service Name:");
-        nameLabel.setBounds(50, 50, 120, 30);
+        JLabel nameLabel = new JLabel("Name:");
+        nameLabel.setBounds(30, 30, 100, 25);
         add(nameLabel);
 
         nameField = new JTextField();
-        nameField.setBounds(180, 50, 150, 30);
+        nameField.setBounds(130, 30, 200, 25);
         add(nameField);
 
         JLabel descLabel = new JLabel("Description:");
-        descLabel.setBounds(50, 100, 150, 30);
+        descLabel.setBounds(30, 70, 100, 25);
         add(descLabel);
 
-        descriptionArea = new JTextArea();
-        descriptionArea.setBounds(180, 100, 150, 80);
-        add(descriptionArea);
+        descArea = new JTextArea();
+        descArea.setBounds(130, 70, 200, 60);
+        add(descArea);
 
         JLabel priceLabel = new JLabel("Price:");
-        priceLabel.setBounds(50, 200, 120, 30);
+        priceLabel.setBounds(30, 150, 100, 25);
         add(priceLabel);
 
         priceField = new JTextField();
-        priceField.setBounds(180, 200, 150, 30);
+        priceField.setBounds(130, 150, 200, 25);
         add(priceField);
 
-        addButton = new JButton("Add Service");
-        addButton.setBounds(130, 270, 140, 30);
-        add(addButton);
+        JButton addBtn = new JButton("Add");
+        addBtn.setBounds(130, 200, 120, 30);
+        add(addBtn);
 
-        addButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        addBtn.addActionListener(e -> {
 
-                String name = nameField.getText();
-                String description = descriptionArea.getText();
+            String name = nameField.getText();
+            String desc = descArea.getText();
+            double price = Double.parseDouble(priceField.getText());
 
-                double price = 0;
-                try {
-                    price = Double.parseDouble(priceField.getText());
-                } catch (Exception ex) {
-                    System.out.println("Invalid price!");
-                    return;
-                }
+            Service service = new Service(
+                    user.getId(), name, desc, price
+            );
 
-                ServiceController controller = new ServiceController();
-                boolean result =controller.addService(providerId, name, description, price);
+            ServiceController controller = new ServiceController();
+            boolean result = controller.addService(service);
 
-                if(result){
+            if (result) {
+                JOptionPane.showMessageDialog(this, "Service Added");
 
-                    JOptionPane.showMessageDialog(null,"Service Added Successfully!");
-                    nameField.setText("");
-                    descriptionArea.setText("");
-                    priceField.setText("");
-                }
-                else{
-                    JOptionPane.showMessageDialog(null,"Failed to Add Service Please Check your Details!");
-                }
+                parent.loadServices(); // 🔥 refresh
 
+                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed");
             }
         });
 
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 }

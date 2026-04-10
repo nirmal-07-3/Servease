@@ -7,12 +7,14 @@ import com.servease.service.UserService;
 import javax.swing.*;
 import java.util.List;
 
+
+
 public class ServiceController {
 
     private ServiceManager serviceManager = new ServiceManager();
 
-    public boolean addService(int provider_id, String name, String description, double price) {
-        Service service = new Service(provider_id, name, description, price);
+    public boolean addService(Service service) {
+
 
         return serviceManager.addService(service);
 
