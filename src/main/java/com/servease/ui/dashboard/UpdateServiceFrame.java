@@ -11,7 +11,7 @@ public class UpdateServiceFrame extends JFrame {
     private Service service;
     private ProviderServicesFrame parent;
 
-    private JTextField nameField, priceField;
+    private JTextField nameField,descriptionField, priceField;
 
     public UpdateServiceFrame(Service service, ProviderServicesFrame parent) {
 
@@ -26,9 +26,17 @@ public class UpdateServiceFrame extends JFrame {
         nameLabel.setBounds(30, 30, 100, 25);
         add(nameLabel);
 
+        JLabel descriptionLabel=new JLabel("Description");
+        descriptionLabel.setBounds(30,50,100,25);
+        add(descriptionLabel);
+
         nameField = new JTextField(service.getName());
         nameField.setBounds(130, 30, 200, 25);
         add(nameField);
+
+        descriptionField = new JTextField(service.getDescription());
+        descriptionField.setBounds(130, 50, 200, 25);
+        add(descriptionField);
 
         JLabel priceLabel = new JLabel("Price:");
         priceLabel.setBounds(30, 80, 100, 25);
@@ -45,6 +53,7 @@ public class UpdateServiceFrame extends JFrame {
         updateBtn.addActionListener(e -> {
 
             service.setName(nameField.getText());
+            service.setDescription(descriptionField.getText());
             service.setPrice(Double.parseDouble(priceField.getText()));
 
             ServiceController controller = new ServiceController();
