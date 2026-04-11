@@ -105,10 +105,10 @@ public class ProviderServicesFrame extends JFrame {
 
         ServiceController controller = new ServiceController();
         List<Service> services = controller.getServicesByProviderId(user.getId());
-
+        int count=1;
         for (Service s : services) {
             model.addRow(new Object[]{
-                    s.getId(),
+                    count++,
                     s.getName(),
                     s.getPrice()
             });

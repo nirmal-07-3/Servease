@@ -32,6 +32,14 @@ public class ServiceManager {
 
         return serviceDAO.addService(service);
     }
+
+    public List<Service> getAllServices() {
+        ServiceDAO serviceDAO=new ServiceDAO();
+        return serviceDAO.getAllServices();
+    }
+
+
+
    public List<Service> getServicesByProviderId(int provider_id){
         ServiceDAO servicedao=new ServiceDAO();
         if (provider_id<=0){

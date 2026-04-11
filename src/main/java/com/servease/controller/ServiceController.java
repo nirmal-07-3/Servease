@@ -21,6 +21,9 @@ public class ServiceController {
 
     }
 
+    public List<Service> getAllServices(){
+        return  serviceManager.getAllServices();
+    }
     public List<Service> getServicesByProviderId(int provider_id) {
         return serviceManager.getServicesByProviderId(provider_id);
     }
