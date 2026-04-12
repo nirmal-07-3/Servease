@@ -1,6 +1,8 @@
 package com.servease.ui.dashboard;
 
+import com.servease.controller.BookingController;
 import com.servease.controller.ServiceController;
+import com.servease.model.Bookings;
 import com.servease.model.Service;
 import com.servease.model.User;
 
@@ -8,6 +10,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Date;
 import java.util.List;
 
 public class BrowseServicesFrame extends JFrame {
@@ -40,21 +43,48 @@ public class BrowseServicesFrame extends JFrame {
         loadServices();
 
         setLocationRelativeTo(null);
-        setVisible(true);
+
 
         JButton bookingBtn = new JButton("Book");
-        bookingBtn.setBounds(130, 140, 120, 30);
+        bookingBtn.setBounds(250, 300, 120, 30);
         add(bookingBtn);
 
-        bookingBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        bookingBtn.addActionListener(e -> {
 
-                JOptionPane.showMessageDialog(null,"Service Booked");
+            int selectedRow=table.getSelectedRow();
+
+            if(selectedRow==-1){
+                JOptionPane.showMessageDialog(null,"Please Select a Service");
+                return;
+            }
+            int serviceId=(int)model.getValueAt(selectedRow,0);
+            try {
+                Date date=new Date(System.currentTimeMillis());
+
+                Bookings bookings=new Bookings(user.getId(),serviceId,date,"Pending");
+
+
+                BookingController bookingController=new BookingController();
+
+                boolean result =bookingController.bookService(bookings);
+
+                if(result){
+                    JOptionPane.showMessageDialog(null,"Service Booked Successfully !");
+                }
+                else {
+                    JOptionPane.showMessageDialog(null,"Booking Failed !");
+
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null,"This Error Occurred");
+
             }
 
+        }
 
-        });
+
+        );
     }
 
 
@@ -74,5 +104,7 @@ public class BrowseServicesFrame extends JFrame {
                     s.getPrice()
             });
         }
+        setVisible(true);
     }
+
 }
