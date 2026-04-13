@@ -3,6 +3,8 @@ package com.servease.service;
 import com.servease.dao.BookingDAO;
 import com.servease.model.Bookings;
 
+import java.util.List;
+
 public class BookingService {
     private BookingDAO bookingDAO=new BookingDAO();
 
@@ -13,4 +15,10 @@ public class BookingService {
          return bookingDAO.addBooking(bookings);
     }
 
+    public List<Object[]> getUserBookingsWithService(int userId) {
+        return bookingDAO.getUserBookingsWithService(userId);
+    }
 }
+
+
+

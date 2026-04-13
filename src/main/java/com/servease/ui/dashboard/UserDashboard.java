@@ -48,12 +48,8 @@ public class UserDashboard extends JFrame {
         bookingBtn.setBounds(200, 180, 200, 40);
         add(bookingBtn);
 
-        bookingBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(UserDashboard.this, "My Bookings Clicked");
-                // 👉 Later: open BookingFrame
-            }
+        bookingBtn.addActionListener(e -> {
+            new UserBookingsFrame(user);
         });
 
         // 🔹 Logout Button
