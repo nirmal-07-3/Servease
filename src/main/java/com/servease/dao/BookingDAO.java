@@ -48,12 +48,12 @@ public class BookingDAO {
             try {
                 Connection conn = DBConnection.getConnection();
 
-                String sql = "SELECT b.id, s.name, b.booking_date, b.status " +
+                String query = "SELECT b.id, s.name, b.booking_date, b.status " +
                         "FROM bookings b " +
                         "JOIN services s ON b.service_id = s.id " +
                         "WHERE b.user_id = ?";
 
-                PreparedStatement ps = conn.prepareStatement(sql);
+                PreparedStatement ps = conn.prepareStatement(query);
                 ps.setInt(1, userId);
 
                 ResultSet rs = ps.executeQuery();
@@ -73,6 +73,86 @@ public class BookingDAO {
 
             return list;
         }
+
+
+    public List<Object[]> getBookingsByProvider(int providerId) {
+
+        List<Object[]> list = new ArrayList<>();
+
+        try {
+            Connection conn = DBConnection.getConnection();
+
+            String sql = "SELECT b.id, s.name AS service_name, u.name AS user_name, b.booking_date, b.status " +
+                    "FROM bookings b " +
+                    "JOIN services s ON b.service_id = s.id " +
+                    "JOIN users u ON b.user_id = u.id " +
+                    "WHERE s.provider_id = ?";
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, providerId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("service_name"),
+                        rs.getString("user_name"),
+                        rs.getDate("booking_date"),
+                        rs.getString("status")
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public boolean updateBookingStatus(int bookingId,String status){
+
+        try {
+            Connection conn=DBConnection.getConnection();
+            String query="UPDATE bookings SET status=? where id=?";
+            PreparedStatement ps= conn.prepareStatement(query);
+            ps.setString(1,status);
+            ps.setInt(2,bookingId);
+
+            return ps.executeUpdate()>0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public Bookings getBookingById(int id) {
+
+        try {
+            Connection conn = DBConnection.getConnection();
+
+            String sql = "SELECT * FROM bookings WHERE id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return new Bookings(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getInt("service_id"),
+                        rs.getDate("booking_date"),
+                        rs.getString("status")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
     }
 
 

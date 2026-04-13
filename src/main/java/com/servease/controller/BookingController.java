@@ -16,4 +16,12 @@ public class BookingController {
     public List<Object[]> getUserBookingsWithService(int userId) {
         return bookingService.getUserBookingsWithService(userId);
     }
+
+    public List<Object[]> getBookingsByProvider(int userId) {
+        return bookingService.getBookingsByProvider(userId);
+    }
+
+    public boolean updateBookingStatus(int bookingId,String status){
+        return bookingService.updateBookingStatus(bookingId,status);
+    }
 }

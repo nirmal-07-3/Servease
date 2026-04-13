@@ -37,6 +37,14 @@ public class ProviderDashboard extends JFrame {
             }
         });
 
+        // 🔹 Booking Button
+
+        JButton BookingBtn=new JButton("Bookings");
+        BookingBtn.setBounds(200,180,200,40);
+        add(BookingBtn);
+
+        BookingBtn.addActionListener(e -> new ProviderBookingsFrame(user));
+
         // 🔹 Logout Button
         JButton logoutBtn = new JButton("Logout");
         logoutBtn.setBounds(500, 20, 100, 30);
