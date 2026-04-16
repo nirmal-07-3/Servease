@@ -96,6 +96,34 @@ public class ServiceDAO {
         return services;
     }
 
+    public Service getServiceById(int id) {
+
+        try {
+            Connection conn = DBConnection.getConnection();
+
+            String sql = "SELECT * FROM services WHERE id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return new Service(
+                        rs.getInt("id"),
+                        rs.getInt("provider_id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getDouble("price")
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public boolean deleteService(int service_id){
 
         boolean isDeleted=false;

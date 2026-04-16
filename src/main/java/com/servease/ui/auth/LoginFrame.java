@@ -73,6 +73,14 @@ public class LoginFrame extends JFrame {
 
             UserController controller = new UserController();
 
+            if(!email.contains("@")){
+                JOptionPane.showMessageDialog(null,"Email Address Is Not Valid");
+                return ;
+            }
+            if (password.length()<4){
+                JOptionPane.showMessageDialog(null,"Password must be at least 4 character");
+                return ;
+            }
             if(email.isEmpty()||password.isEmpty()){
                 JOptionPane.showMessageDialog(null,"Fill All Fields!!");
                 return;

@@ -82,7 +82,7 @@ public class ProviderServicesFrame extends JFrame {
             int id = (int) model.getValueAt(row, 0);
 
             ServiceController controller = new ServiceController();
-            boolean result = controller.deleteService(id);
+            boolean result = controller.deleteService(id,user.getId());
 
             if (result) {
                 JOptionPane.showMessageDialog(this, "Deleted Successfully");

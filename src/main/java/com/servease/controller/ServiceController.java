@@ -28,9 +28,9 @@ public class ServiceController {
         return serviceManager.getServicesByProviderId(provider_id);
     }
 
-    public boolean deleteService(int service_id) {
+    public boolean deleteService(int service_id,int provider_id) {
 
-        return serviceManager.deleteService(service_id);
+        return serviceManager.deleteService(service_id,provider_id);
     }
     public boolean updateService(Service service){
 

@@ -4,7 +4,6 @@ package com.servease.ui.dashboard;
 import com.servease.controller.ServiceController;
 import com.servease.model.Service;
 import com.servease.model.User;
-import com.servease.ui.dashboard.ProviderServicesFrame;
 
 import javax.swing.*;
 

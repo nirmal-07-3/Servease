@@ -1,10 +1,11 @@
 package com.servease.ui.dashboard;
 
+import com.servease.controller.BookingController;
+import com.servease.controller.ServiceController;
 import com.servease.model.User;
 import com.servease.ui.auth.LoginFrame;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class ProviderDashboard extends JFrame {
@@ -15,7 +16,7 @@ public class ProviderDashboard extends JFrame {
 
         this.user = user;
 
-        setTitle("Provider Dashboard");
+        setTitle("Servease - Provider Dashboard");
         setSize(1100, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -63,57 +64,55 @@ public class ProviderDashboard extends JFrame {
         header.add(welcome, BorderLayout.EAST);
 
         // =======================
-        // 🔹 CONTENT PANEL
+        // 🔹 CONTENT
         // =======================
-        JPanel content = new JPanel();
-        content.setLayout(new BorderLayout());
+        JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(245, 245, 245));
 
-        // 🔥 STATS CARDS
+        // 🔥 REAL DATA CONTROLLERS
+        ServiceController serviceController = new ServiceController();
+        BookingController bookingController = new BookingController();
+
+        int totalServices = serviceController.getServicesByProviderId(user.getId()).size();
+        int totalBookings = bookingController.getBookingsByProvider(user.getId()).size();
+
+        // =======================
+        // 🔹 CARDS
+        // =======================
         JPanel cardsPanel = new JPanel(new GridLayout(1, 4, 20, 20));
         cardsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         cardsPanel.setBackground(new Color(245, 245, 245));
 
-        cardsPanel.add(createCard("Total Services", "3"));
-        cardsPanel.add(createCard("Bookings", "67"));
-        cardsPanel.add(createCard("Rating", "4.7"));
-        cardsPanel.add(createCard("Revenue", "₹4280"));
+        cardsPanel.add(createCard("Total Services", String.valueOf(totalServices)));
+        cardsPanel.add(createCard("Bookings", String.valueOf(totalBookings)));
+        cardsPanel.add(createCard("Rating", "4.7"));     // dummy
+        cardsPanel.add(createCard("Revenue", "₹4280"));  // dummy
 
-        // 🔥 TABLE PANEL
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
-        tablePanel.setBackground(new Color(245, 245, 245));
+        // =======================
+        // 🔹 CENTER BUTTON PANEL
+        // =======================
+        JPanel centerPanel = new JPanel();
+        centerPanel.setBackground(new Color(245, 245, 245));
 
-        JLabel tableTitle = new JLabel("My Services");
-        tableTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        JButton openServicesBtn = new JButton("Manage My Services");
+        openServicesBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        openServicesBtn.setBackground(new Color(41, 128, 185));
+        openServicesBtn.setForeground(Color.WHITE);
 
-        // 🔥 TABLE DATA (TEMP — later dynamic)
-        String[] columns = {"Service Name", "Category", "Price", "Status"};
-        Object[][] data = {
-                {"Electrician", "Home", "₹599", "Active"},
-                {"Plumbing", "Home", "₹699", "Active"},
-                {"Barber", "Personal", "₹399", "Inactive"}
-        };
+        JButton openBookingsBtn = new JButton("View Bookings");
+        openBookingsBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        openBookingsBtn.setBackground(new Color(46, 204, 113));
+        openBookingsBtn.setForeground(Color.WHITE);
 
-        DefaultTableModel model = new DefaultTableModel(data, columns);
-        JTable table = new JTable(model);
-
-        // 🔥 TABLE STYLE
-        table.setRowHeight(25);
-        table.setFont(new Font("Arial", Font.PLAIN, 13));
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-
-        JScrollPane scroll = new JScrollPane(table);
-
-        tablePanel.add(tableTitle, BorderLayout.NORTH);
-        tablePanel.add(scroll, BorderLayout.CENTER);
+        centerPanel.add(openServicesBtn);
+        centerPanel.add(openBookingsBtn);
 
         // ADD TO CONTENT
         content.add(cardsPanel, BorderLayout.NORTH);
-        content.add(tablePanel, BorderLayout.CENTER);
+        content.add(centerPanel, BorderLayout.CENTER);
 
         // =======================
-        // 🔥 ADD ALL TO FRAME
+        // 🔥 ADD TO FRAME
         // =======================
         add(sidebar, BorderLayout.WEST);
         add(header, BorderLayout.NORTH);
@@ -137,13 +136,11 @@ public class ProviderDashboard extends JFrame {
             }
         });
 
-        servicesBtn.addActionListener(e -> {
-            new ProviderServicesFrame(user);
-        });
+        servicesBtn.addActionListener(e -> new ProviderServicesFrame(user));
+        bookingBtn.addActionListener(e -> new ProviderBookingsFrame(user));
 
-        bookingBtn.addActionListener(e -> {
-            new ProviderBookingsFrame(user);
-        });
+        openServicesBtn.addActionListener(e -> new ProviderServicesFrame(user));
+        openBookingsBtn.addActionListener(e -> new ProviderBookingsFrame(user));
 
         setVisible(true);
     }

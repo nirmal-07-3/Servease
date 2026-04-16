@@ -48,10 +48,12 @@ public class ServiceManager {
        return servicedao.getServicesByProviderId(provider_id);
    }
 
-    public boolean deleteService(int service_id){
+    public boolean deleteService(int service_id, int provider_id){
 
-        if(service_id<=0){
-            System.out.println("Invalid Service Id");
+        Service service=serviceDAO.getServiceById(service_id);
+
+        if(service==null||service.getProvider_id()!=provider_id){
+            System.out.println("Unauthorized Delete");
             return false;
         }
         return serviceDAO.deleteService(service_id);
@@ -63,6 +65,10 @@ public class ServiceManager {
             return false;
         }
         return serviceDAO.updateService(service);
+    }
+
+    public Service getServiceById(int id){
+        return serviceDAO.getServiceById(id);
     }
 
 }
