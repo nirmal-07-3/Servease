@@ -4,17 +4,15 @@ import com.servease.controller.BookingController;
 import com.servease.model.User;
 
 import javax.swing.*;
-import javax.swing.table.*;
 import java.awt.*;
 import java.util.List;
 
 public class ProviderBookingsFrame extends JPanel {
 
     private User user;
-    private JTable table;
-    private DefaultTableModel model;
+    private JPanel listPanel;
 
-    public ProviderBookingsFrame(User user) {
+    public ProviderBookingsFrame(User user){
 
         this.user = user;
 
@@ -22,98 +20,58 @@ public class ProviderBookingsFrame extends JPanel {
         setBackground(new Color(245,245,245));
 
         JLabel title = new JLabel("My Bookings");
-        title.setFont(new Font("Arial", Font.BOLD, 18));
-        title.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
+        title.setFont(new Font("Arial",Font.BOLD,18));
+        title.setBorder(BorderFactory.createEmptyBorder(15,20,15,20));
 
-        model = new DefaultTableModel(
-                new String[]{"ID","Service","User","Date","Status","Action"},0
-        );
+        listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel,BoxLayout.Y_AXIS));
 
-        table = new JTable(model);
-        table.setRowHeight(30);
+        JScrollPane scroll = new JScrollPane(listPanel);
 
-        JScrollPane scroll = new JScrollPane(table);
+        add(title,BorderLayout.NORTH);
+        add(scroll,BorderLayout.CENTER);
 
-        table.getColumn("Action").setCellRenderer(new Renderer());
-        table.getColumn("Action").setCellEditor(new Editor(new JCheckBox(), table));
-
-        add(title, BorderLayout.NORTH);
-        add(scroll, BorderLayout.CENTER);
-
-        loadBookings();
+        load();
     }
 
-    private void loadBookings(){
+    private void load(){
 
-        model.setRowCount(0);
+        listPanel.removeAll();
 
-        BookingController controller = new BookingController();
-        List<Object[]> list = controller.getBookingsByProvider(user.getId());
+        BookingController bc = new BookingController();
+        List<Object[]> list = bc.getBookingsByProvider(user.getId());
 
-        for(Object[] row : list){
-            model.addRow(new Object[]{
-                    row[0],row[1],row[2],row[3],row[4],""
-            });
-        }
-    }
+        for(Object[] row: list){
 
-    // ===== RENDER BUTTONS =====
-    class Renderer extends JPanel implements TableCellRenderer {
+            int id = (int)row[0];
 
-        JButton a = new JButton("✔");
-        JButton r = new JButton("✖");
-        JButton c = new JButton("✓");
+            JPanel card = new JPanel(new BorderLayout());
+            card.setBackground(Color.WHITE);
+            card.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
 
-        public Renderer(){
-            setLayout(new FlowLayout());
-            add(a); add(r); add(c);
-        }
+            JLabel info = new JLabel(
+                    row[1]+" | "+row[2]+" | "+row[3]+" | "+row[4]);
 
-        public Component getTableCellRendererComponent(JTable t,Object v,
-                                                       boolean s,boolean f,int r,int c){
-            return this;
-        }
-    }
+            JPanel btns = new JPanel();
 
-    // ===== BUTTON ACTION =====
-    class Editor extends DefaultCellEditor {
+            JButton a = new JButton("Accept");
+            JButton r = new JButton("Reject");
+            JButton c = new JButton("Complete");
 
-        JPanel panel;
-        JTable table;
+            a.addActionListener(e -> {bc.updateBookingStatus(id,"Accepted"); load();});
+            r.addActionListener(e -> {bc.updateBookingStatus(id,"Rejected"); load();});
+            c.addActionListener(e -> {bc.updateBookingStatus(id,"Completed"); load();});
 
-        public Editor(JCheckBox box,JTable table){
-            super(box);
-            this.table = table;
+            btns.add(a); btns.add(r); btns.add(c);
 
-            panel = new JPanel(new FlowLayout());
+            card.add(info,BorderLayout.CENTER);
+            card.add(btns,BorderLayout.EAST);
 
-            JButton a = new JButton("✔");
-            JButton r = new JButton("✖");
-            JButton c = new JButton("✓");
-
-            panel.add(a); panel.add(r); panel.add(c);
-
-            a.addActionListener(e -> update("Accepted"));
-            r.addActionListener(e -> update("Rejected"));
-            c.addActionListener(e -> update("Completed"));
+            listPanel.add(card);
+            listPanel.add(Box.createVerticalStrut(10));
         }
 
-        private void update(String status){
-
-            int row = table.getEditingRow();
-            int id = (int)table.getValueAt(row,0);
-
-            BookingController controller = new BookingController();
-            controller.updateBookingStatus(id,status);
-
-            loadBookings();
-        }
-
-        public Component getTableCellEditorComponent(JTable t,Object v,
-                                                     boolean s,int r,int c){
-            return panel;
-        }
-
-        public Object getCellEditorValue(){ return ""; }
+        revalidate();
+        repaint();
     }
 }

@@ -2,111 +2,93 @@ package com.servease.ui.auth;
 
 import com.servease.controller.UserController;
 import com.servease.model.User;
-import com.servease.ui.dashboard.AdminDashboard;
-import com.servease.ui.dashboard.ProviderDashboard;
-import com.servease.ui.dashboard.UserDashboard;
+import com.servease.ui.dashboard.*;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class LoginFrame extends JFrame {
 
-    public LoginFrame() {
+    public LoginFrame(){
 
-        setTitle("Login - Servease");
-        setSize(400, 450);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Servease Login");
+        setSize(400, 500);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBackground(Color.WHITE);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        // ===== MAIN BG =====
+        JPanel bg = new JPanel(new GridBagLayout());
+        bg.setBackground(new Color(245,245,245));
 
-        // 🔹 Title
+        // ===== CARD =====
+        JPanel card = new JPanel();
+        card.setPreferredSize(new Dimension(300, 350));
+        card.setBackground(Color.WHITE);
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+
+        // TITLE
         JLabel title = new JLabel("Servease Login");
-        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setFont(new Font("Arial", Font.BOLD, 20));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 🔹 Email
-        JTextField emailField = new JTextField();
-        emailField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-        emailField.setBorder(BorderFactory.createTitledBorder("Email"));
+        // FIELDS
+        JTextField email = new JTextField();
+        email.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        email.setBorder(BorderFactory.createTitledBorder("Email"));
 
-        // 🔹 Password
-        JPasswordField passwordField = new JPasswordField();
-        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
-        passwordField.setBorder(BorderFactory.createTitledBorder("Password"));
+        JPasswordField pass = new JPasswordField();
+        pass.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        pass.setBorder(BorderFactory.createTitledBorder("Password"));
 
-        // 🔹 Button
-        JButton loginBtn = new JButton("Login");
-        loginBtn.setBackground(new Color(33, 150, 243));
-        loginBtn.setForeground(Color.WHITE);
-        loginBtn.setFocusPainted(false);
-        loginBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // BUTTONS
+        JButton login = new JButton("Login");
+        login.setBackground(new Color(33,150,243));
+        login.setForeground(Color.WHITE);
+        login.setFocusPainted(false);
+        login.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 🔹 Register link
-        JButton registerBtn = new JButton("Register");
-        registerBtn.setBorderPainted(false);
-        registerBtn.setContentAreaFilled(false);
-        registerBtn.setForeground(Color.BLUE);
-        registerBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton register = new JButton("Register");
+        register.setBorderPainted(false);
+        register.setContentAreaFilled(false);
+        register.setForeground(Color.BLUE);
+        register.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 🔥 ADD COMPONENTS
-        mainPanel.add(title);
-        mainPanel.add(Box.createVerticalStrut(30));
-        mainPanel.add(emailField);
-        mainPanel.add(Box.createVerticalStrut(15));
-        mainPanel.add(passwordField);
-        mainPanel.add(Box.createVerticalStrut(25));
-        mainPanel.add(loginBtn);
-        mainPanel.add(Box.createVerticalStrut(15));
-        mainPanel.add(registerBtn);
+        // ADD
+        card.add(title);
+        card.add(Box.createVerticalStrut(20));
+        card.add(email);
+        card.add(Box.createVerticalStrut(15));
+        card.add(pass);
+        card.add(Box.createVerticalStrut(20));
+        card.add(login);
+        card.add(Box.createVerticalStrut(10));
+        card.add(register);
 
-        add(mainPanel);
+        bg.add(card);
+        add(bg);
 
-        // 🔥 LOGIN ACTION
-        loginBtn.addActionListener(e -> {
+        // ===== ACTION =====
+        login.addActionListener(e -> {
 
-            String email = emailField.getText();
-            String password = new String(passwordField.getPassword());
+            UserController c = new UserController();
+            User u = c.loginUser(email.getText(), new String(pass.getPassword()));
 
-            UserController controller = new UserController();
-
-            if(!email.contains("@")){
-                JOptionPane.showMessageDialog(null,"Email Address Is Not Valid");
-                return ;
-            }
-            if (password.length()<4){
-                JOptionPane.showMessageDialog(null,"Password must be at least 4 character");
-                return ;
-            }
-            if(email.isEmpty()||password.isEmpty()){
-                JOptionPane.showMessageDialog(null,"Fill All Fields!!");
+            if(u == null){
+                JOptionPane.showMessageDialog(this,"Invalid Credentials");
                 return;
             }
 
-            User user = controller.loginUser(email, password);
+            dispose();
 
-            if (user != null) {
-                dispose(); // close login
-            }
-            if (user.getRole().equals("USER")) {
-                new UserDashboard(user);
-            }
-            else if (user.getRole().equals("PROVIDER")) {
-                new ProviderDashboard(user);
-            }
-            else if (user.getRole().equals("ADMIN")) {
-                new AdminDashboard(user);
-            }
-            else {
-                JOptionPane.showMessageDialog(this, "Invalid Credentials");
+            switch(u.getRole()){
+                case "USER" -> new UserDashboard(u);
+                case "PROVIDER" -> new ProviderDashboard(u);
+                case "ADMIN" -> new AdminDashboard(u);
             }
         });
 
-        // 🔥 REGISTER REDIRECT
-        registerBtn.addActionListener(e -> {
+        register.addActionListener(e -> {
             dispose();
             new RegisterFrame();
         });

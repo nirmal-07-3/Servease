@@ -1,110 +1,47 @@
 package com.servease.ui.dashboard;
 
-import com.servease.controller.BookingController;
 import com.servease.controller.ServiceController;
-import com.servease.model.Bookings;
 import com.servease.model.Service;
 import com.servease.model.User;
+import com.servease.ui.components.ServiceCard;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Date;
+import java.awt.*;
 import java.util.List;
 
 public class BrowseServicesFrame extends JFrame {
 
-    private Service service;
-    private ProviderServicesFrame parent;
     private User user;
-    private JTable table;
-    private DefaultTableModel model;
-
-    private JTextField nameField,descriptionField, priceField;
 
     public BrowseServicesFrame(User user) {
 
         this.user = user;
 
         setTitle("Browse Services");
-        setSize(650, 400);
-        setLayout(null);
+        setSize(800, 500);
+        setLayout(new BorderLayout());
 
-        model = new DefaultTableModel(
-                new String[]{"Service ID", "Name", "Description", "Price"}, 0
-        );
+        JPanel listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        listPanel.setBackground(new Color(245,245,245));
 
-        table = new JTable(model);
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setBounds(20, 20, 600, 250);
-        add(scroll);
-
-        loadServices();
-
-        setLocationRelativeTo(null);
-
-
-        JButton bookingBtn = new JButton("Book");
-        bookingBtn.setBounds(250, 300, 120, 30);
-        add(bookingBtn);
-
-        bookingBtn.addActionListener(e -> {
-
-            int selectedRow=table.getSelectedRow();
-
-            if(selectedRow==-1){
-                JOptionPane.showMessageDialog(null,"Please Select a Service");
-                return;
-            }
-            int serviceId=(int)model.getValueAt(selectedRow,0);
-            try {
-                Date date=new Date(System.currentTimeMillis());
-
-                Bookings bookings=new Bookings(user.getId(),serviceId,date,"Pending");
-
-
-                BookingController bookingController=new BookingController();
-
-                boolean result =bookingController.bookService(bookings);
-
-                if(result){
-                    JOptionPane.showMessageDialog(null,"Service Booked Successfully !");
-                }
-                else {
-                    JOptionPane.showMessageDialog(null,"Booking Failed !");
-
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(null,"This Error Occurred");
-
-            }
-
-        }
-
-
-        );
-    }
-
-
-    // 🔥 LOAD ALL SERVICES (NO FILTER)
-    private void loadServices() {
-
-        model.setRowCount(0);
+        JScrollPane scroll = new JScrollPane(listPanel);
 
         ServiceController controller = new ServiceController();
-        List<Service> services = controller.getAllServices(); // 🔥 important
-            int count=1;
-        for (Service s : services) {
-            model.addRow(new Object[]{
-                    count++,
+        List<Service> services = controller.getAllServices();
+
+        for(Service s : services){
+            listPanel.add(new ServiceCard(
                     s.getName(),
                     s.getDescription(),
                     s.getPrice()
-            });
+            ));
+            listPanel.add(Box.createVerticalStrut(10));
         }
+
+        add(scroll, BorderLayout.CENTER);
+
+        setLocationRelativeTo(null);
         setVisible(true);
     }
-
 }
