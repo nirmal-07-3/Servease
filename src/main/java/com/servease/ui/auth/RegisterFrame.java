@@ -1,107 +1,107 @@
 package com.servease.ui.auth;
 
 import com.servease.controller.UserController;
-import com.servease.model.User;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JOptionPane;
+import java.awt.*;
 
-public class RegisterFrame extends JFrame
-{
-    JTextField nameField, emailField, phoneField;
-    JPasswordField passwordField;
-    JComboBox<String> roleBox;
-    JButton registerButton;
+public class RegisterFrame extends JFrame {
 
-    public RegisterFrame (){
+    public RegisterFrame() {
 
-        setTitle("User Registration");
-        setSize(400, 400);
-        setLayout(null);
+        setTitle("Register - Servease");
+        setSize(400, 550);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        // All Details
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
 
-        JLabel nameLabel = new JLabel("Name:");
-        nameLabel.setBounds(50, 50, 100, 30);
-        add(nameLabel);
+        // 🔹 Title
+        JLabel title = new JLabel("Create Account");
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        nameField = new JTextField();
-        nameField.setBounds(150, 50, 150, 30);
-        add(nameField);
+        // 🔹 Fields
+        JTextField nameField = createField("Name");
+        JTextField emailField = createField("Email");
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        passwordField.setBorder(BorderFactory.createTitledBorder("Password"));
 
-        JLabel emailLabel = new JLabel("Email:");
-        emailLabel.setBounds(50, 100, 100, 30);
-        add(emailLabel);
+        JTextField phoneField = createField("Phone");
 
-        emailField = new JTextField();
-        emailField.setBounds(150, 100, 150, 30);
-        add(emailField);
+        // 🔹 Role Dropdown
+        String[] roles = {"USER", "PROVIDER"};
+        JComboBox<String> roleBox = new JComboBox<>(roles);
+        roleBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        roleBox.setBorder(BorderFactory.createTitledBorder("Role"));
 
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setBounds(50, 150, 100, 30);
-        add(passwordLabel);
+        // 🔹 Register Button
+        JButton registerBtn = new JButton("Register");
+        registerBtn.setBackground(new Color(33, 150, 243));
+        registerBtn.setForeground(Color.WHITE);
+        registerBtn.setFocusPainted(false);
+        registerBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        passwordField = new JPasswordField();
-        passwordField.setBounds(150, 150, 150, 30);
-        add(passwordField);
+        // 🔹 Login Redirect
+        JButton loginBtn = new JButton("Already have account? Login");
+        loginBtn.setBorderPainted(false);
+        loginBtn.setContentAreaFilled(false);
+        loginBtn.setForeground(Color.BLUE);
+        loginBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel phoneLabel = new JLabel("Phone:");
-        phoneLabel.setBounds(50, 250, 100, 30);
-        add(phoneLabel);
+        // 🔥 ADD COMPONENTS
+        mainPanel.add(title);
+        mainPanel.add(Box.createVerticalStrut(20));
+        mainPanel.add(nameField);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(emailField);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(passwordField);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(phoneField);
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(roleBox);
+        mainPanel.add(Box.createVerticalStrut(20));
+        mainPanel.add(registerBtn);
+        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(loginBtn);
 
-        phoneField = new JTextField();
-        phoneField.setBounds(150, 250, 150, 30);
-        add(phoneField);
+        add(mainPanel);
 
-        JLabel roleLabel = new JLabel("Role:");
-        roleLabel.setBounds(50, 200, 100, 30);
-        add(roleLabel);
+        // 🔥 REGISTER ACTION
+        registerBtn.addActionListener(e -> {
 
-        roleBox = new JComboBox<>(new String[]{"USER", "PROVIDER"});
-        roleBox.setBounds(150, 200, 150, 30);
-        add(roleBox);
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            String phone = phoneField.getText();
+            String role = (String) roleBox.getSelectedItem();
 
+            UserController controller = new UserController();
+            controller.registerUser(name, email, password, phone, role);
+            JOptionPane.showMessageDialog(null,"Registration Successful !");
+            dispose();
+            new LoginFrame();
+        });
 
-
-        //Button
-
-        registerButton = new JButton("Register");
-        registerButton.setBounds(150, 300, 100, 30);
-        add(registerButton);
-
-        registerButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-
-                String name = nameField.getText();
-                String email = emailField.getText();
-                String password = new String(passwordField.getPassword());
-                String phone = phoneField.getText();
-                String role = roleBox.getSelectedItem().toString();
-
-
-                UserController controller = new UserController();
-                boolean result =controller.registerUser(name, email, password, phone,role);
-
-                if(result){
-                    JOptionPane.showMessageDialog(null,"Registered Successfully!");
-
-                    nameField.setText("");
-                    emailField.setText("");
-                    passwordField.setText("");
-                    phoneField.setText("");
-                }
-                else{
-                    JOptionPane.showMessageDialog(null,"Registration Failed!");
-
-                }
-            }
+        // 🔥 LOGIN REDIRECT
+        loginBtn.addActionListener(e -> {
+            dispose();
+            new LoginFrame();
         });
 
         setVisible(true);
     }
+
+    // 🔥 REUSABLE FIELD METHOD
+    private JTextField createField(String title) {
+        JTextField field = new JTextField();
+        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        field.setBorder(BorderFactory.createTitledBorder(title));
+        return field;
+    }
 }
-
-

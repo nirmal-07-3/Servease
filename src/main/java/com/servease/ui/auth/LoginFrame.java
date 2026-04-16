@@ -7,73 +7,102 @@ import com.servease.ui.dashboard.ProviderDashboard;
 import com.servease.ui.dashboard.UserDashboard;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 
 public class LoginFrame extends JFrame {
 
-    JTextField emailField;
-    JPasswordField passwordField;
-    JButton loginButton;
-
     public LoginFrame() {
 
-        setTitle("Login");
-        setSize(300, 250);
-        setLayout(null);
+        setTitle("Login - Servease");
+        setSize(400, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
-        JLabel emailLabel = new JLabel("Email:");
-        emailLabel.setBounds(30, 30, 80, 25);
-        add(emailLabel);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
 
-        emailField = new JTextField();
-        emailField.setBounds(120, 30, 130, 25);
-        add(emailField);
+        // 🔹 Title
+        JLabel title = new JLabel("Servease Login");
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setBounds(30, 80, 80, 25);
-        add(passwordLabel);
+        // 🔹 Email
+        JTextField emailField = new JTextField();
+        emailField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        emailField.setBorder(BorderFactory.createTitledBorder("Email"));
 
-        passwordField = new JPasswordField();
-        passwordField.setBounds(120, 80, 130, 25);
-        add(passwordField);
+        // 🔹 Password
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        passwordField.setBorder(BorderFactory.createTitledBorder("Password"));
 
-        loginButton = new JButton("Login");
-        loginButton.setBounds(100, 130, 80, 30);
-        add(loginButton);
+        // 🔹 Button
+        JButton loginBtn = new JButton("Login");
+        loginBtn.setBackground(new Color(33, 150, 243));
+        loginBtn.setForeground(Color.WHITE);
+        loginBtn.setFocusPainted(false);
+        loginBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        loginButton.addActionListener(new ActionListener() {
+        // 🔹 Register link
+        JButton registerBtn = new JButton("Register");
+        registerBtn.setBorderPainted(false);
+        registerBtn.setContentAreaFilled(false);
+        registerBtn.setForeground(Color.BLUE);
+        registerBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            public void actionPerformed(ActionEvent e) {
-                String email = emailField.getText();
-                String password = new String(passwordField.getPassword());
+        // 🔥 ADD COMPONENTS
+        mainPanel.add(title);
+        mainPanel.add(Box.createVerticalStrut(30));
+        mainPanel.add(emailField);
+        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(passwordField);
+        mainPanel.add(Box.createVerticalStrut(25));
+        mainPanel.add(loginBtn);
+        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(registerBtn);
 
-                UserController controller = new UserController();
-                User user = controller.loginUser(email, password);
+        add(mainPanel);
 
-                if(user!=null){
-                    JOptionPane.showMessageDialog(null,"Login Successful!");
+        // 🔥 LOGIN ACTION
+        loginBtn.addActionListener(e -> {
 
-                    dispose();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
 
-                    if(user.getRole().equals("USER")){
-                        new UserDashboard(user);
-                    } else if (user.getRole().equals("PROVIDER")) {
-                        new ProviderDashboard  (user);
-                    }
-                    else {
-                        new AdminDashboard(user);
-                    }
-                }
-                else {
-                    JOptionPane.showMessageDialog(null,"Invalid Credentials!");
-                }
+            UserController controller = new UserController();
 
+            if(email.isEmpty()||password.isEmpty()){
+                JOptionPane.showMessageDialog(null,"Fill All Fields!!");
+                return;
             }
 
+            User user = controller.loginUser(email, password);
 
+            if (user != null) {
+                dispose(); // close login
+            }
+            if (user.getRole().equals("USER")) {
+                new UserDashboard(user);
+            }
+            else if (user.getRole().equals("PROVIDER")) {
+                new ProviderDashboard(user);
+            }
+            else if (user.getRole().equals("ADMIN")) {
+                new AdminDashboard(user);
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Invalid Credentials");
+            }
         });
-            setVisible(true);
+
+        // 🔥 REGISTER REDIRECT
+        registerBtn.addActionListener(e -> {
+            dispose();
+            new RegisterFrame();
+        });
+
+        setVisible(true);
     }
 }

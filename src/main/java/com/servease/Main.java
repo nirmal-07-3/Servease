@@ -7,6 +7,6 @@ import com.servease.ui.dashboard.UpdateServiceFrame;
 public class Main {
     public static void main(String[] args) {
 
-        new LoginFrame();
+        new RegisterFrame();
     }
 }
