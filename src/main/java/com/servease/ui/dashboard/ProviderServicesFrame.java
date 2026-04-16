@@ -3,115 +3,161 @@ package com.servease.ui.dashboard;
 import com.servease.controller.ServiceController;
 import com.servease.model.Service;
 import com.servease.model.User;
-import com.servease.ui.dashboard.AddServiceFrame;
-import com.servease.ui.dashboard.UpdateServiceFrame;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
+import java.awt.*;
 import java.util.List;
 
-public class ProviderServicesFrame extends JFrame {
+public class ProviderServicesFrame extends JPanel {
 
     private User user;
     private JTable table;
     private DefaultTableModel model;
+    private ServiceController controller;
 
     public ProviderServicesFrame(User user) {
 
         this.user = user;
+        controller = new ServiceController();
 
-        setTitle("My Services");
-        setSize(650, 400);
-        setLayout(null);
+        setLayout(new BorderLayout());
+        setBackground(new Color(245,245,245));
 
+        // ===== TOP =====
+        JPanel top = new JPanel(new BorderLayout());
+        top.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
+
+        JLabel title = new JLabel("My Services");
+        title.setFont(new Font("Arial", Font.BOLD, 18));
+
+        JButton addBtn = new JButton("+ Add Service");
+        addBtn.setBackground(new Color(33,150,243));
+        addBtn.setForeground(Color.WHITE);
+
+        top.add(title, BorderLayout.WEST);
+        top.add(addBtn, BorderLayout.EAST);
+
+        // ===== TABLE =====
         model = new DefaultTableModel(
-                new String[]{"ID", "Name", "Price"}, 0
+                new String[]{"ID","Name","Description","Price","Action"},0
         );
 
         table = new JTable(model);
+        table.setRowHeight(30);
+
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBounds(20, 20, 600, 200);
-        add(scroll);
 
-        JButton addBtn = new JButton("Add Service");
-        addBtn.setBounds(20, 250, 150, 40);
-        add(addBtn);
+        table.getColumn("Action").setCellRenderer(new Renderer());
+        table.getColumn("Action").setCellEditor(new Editor(new JCheckBox(), table));
 
-        JButton editBtn = new JButton("Edit");
-        editBtn.setBounds(200, 250, 150, 40);
-        add(editBtn);
-
-        JButton deleteBtn = new JButton("Delete");
-        deleteBtn.setBounds(380, 250, 150, 40);
-        add(deleteBtn);
-
-        // 🔥 ADD
-        addBtn.addActionListener(e -> {
-            new AddServiceFrame(user, this);
-        });
-
-        // 🔥 EDIT
-        editBtn.addActionListener(e -> {
-
-            int row = table.getSelectedRow();
-
-            if (row == -1) {
-                JOptionPane.showMessageDialog(this, "Select a row first");
-                return;
-            }
-
-            int id = (int) model.getValueAt(row, 0);
-            String name = (String) model.getValueAt(row, 1);
-            double price = (double) model.getValueAt(row, 2);
-
-            Service service = new Service(id, user.getId(), name, "", price);
-
-            new UpdateServiceFrame(service, this);
-        });
-
-        // 🔥 DELETE
-        deleteBtn.addActionListener(e -> {
-
-            int row = table.getSelectedRow();
-
-            if (row == -1) {
-                JOptionPane.showMessageDialog(this, "Select a row first");
-                return;
-            }
-
-            int id = (int) model.getValueAt(row, 0);
-
-            ServiceController controller = new ServiceController();
-            boolean result = controller.deleteService(id,user.getId());
-
-            if (result) {
-                JOptionPane.showMessageDialog(this, "Deleted Successfully");
-                loadServices();
-            } else {
-                JOptionPane.showMessageDialog(this, "Delete Failed");
-            }
-        });
+        add(top, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
 
         loadServices();
 
-        setLocationRelativeTo(null);
-        setVisible(true);
+        addBtn.addActionListener(e -> new AddServiceFrame(user,this));
     }
 
-    // 🔥 ONLY ONE LOAD METHOD
-    public void loadServices() {
+    void loadServices(){
 
         model.setRowCount(0);
 
-        ServiceController controller = new ServiceController();
-        List<Service> services = controller.getServicesByProviderId(user.getId());
-        int count=1;
-        for (Service s : services) {
+        List<Service> list = controller.getServicesByProviderId(user.getId());
+
+        for(Service s : list){
             model.addRow(new Object[]{
-                    count++,
+                    s.getId(),
                     s.getName(),
-                    s.getPrice()
+                    s.getDescription(),
+                    s.getPrice(),
+                    ""
             });
         }
+    }
+
+    // ===== BUTTON RENDER =====
+    class Renderer extends JPanel implements TableCellRenderer {
+
+        JButton edit = new JButton("✏️");
+        JButton delete = new JButton("🗑️");
+
+        public Renderer(){
+            setLayout(new FlowLayout());
+            add(edit);
+            add(delete);
+        }
+
+        public Component getTableCellRendererComponent(JTable table,Object value,
+                                                       boolean isSelected,boolean hasFocus,
+                                                       int row,int col){
+            return this;
+        }
+    }
+
+    // ===== BUTTON ACTION =====
+    class Editor extends DefaultCellEditor {
+
+        JPanel panel;
+        JButton edit,delete;
+        JTable table;
+
+        public Editor(JCheckBox box,JTable table){
+            super(box);
+            this.table = table;
+
+            panel = new JPanel(new FlowLayout());
+
+            edit = new JButton("✏️");
+            delete = new JButton("🗑️");
+
+            panel.add(edit);
+            panel.add(delete);
+
+            // EDIT
+            edit.addActionListener(e -> {
+
+                int row = table.getSelectedRow();
+
+                Service s = new Service(
+                        (int)table.getValueAt(row,0),
+                        user.getId(),
+                        (String)table.getValueAt(row,1),
+                        (String)table.getValueAt(row,2),
+                        Double.parseDouble(table.getValueAt(row,3).toString())
+                );
+
+                new UpdateServiceFrame(s, ProviderServicesFrame.this);
+            });
+
+            // DELETE
+            delete.addActionListener(e -> {
+
+                int row = table.getSelectedRow();
+
+                int confirm = JOptionPane.showConfirmDialog(null,"Delete?");
+
+                if(confirm==0){
+
+                    int id = (int)table.getValueAt(row,0);
+
+                    boolean res = controller.deleteService(id,user.getId());
+
+                    if(res){
+                        JOptionPane.showMessageDialog(null,"Deleted");
+                        loadServices();
+                    }else{
+                        JOptionPane.showMessageDialog(null,"Failed");
+                    }
+                }
+            });
+        }
+
+        public Component getTableCellEditorComponent(JTable table,Object value,
+                                                     boolean isSelected,int row,int col){
+            return panel;
+        }
+
+        public Object getCellEditorValue(){ return ""; }
     }
 }

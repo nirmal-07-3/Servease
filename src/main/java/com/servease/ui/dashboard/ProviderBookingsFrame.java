@@ -4,10 +4,11 @@ import com.servease.controller.BookingController;
 import com.servease.model.User;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
+import java.awt.*;
 import java.util.List;
 
-public class ProviderBookingsFrame extends JFrame {
+public class ProviderBookingsFrame extends JPanel {
 
     private User user;
     private JTable table;
@@ -17,104 +18,102 @@ public class ProviderBookingsFrame extends JFrame {
 
         this.user = user;
 
-        setTitle("Provider Bookings");
-        setSize(700, 400);
-        setLayout(null);
+        setLayout(new BorderLayout());
+        setBackground(new Color(245,245,245));
+
+        JLabel title = new JLabel("My Bookings");
+        title.setFont(new Font("Arial", Font.BOLD, 18));
+        title.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
 
         model = new DefaultTableModel(
-                new String[]{"Booking ID", "Service", "User Name", "Date", "Status"}, 0
+                new String[]{"ID","Service","User","Date","Status","Action"},0
         );
 
         table = new JTable(model);
+        table.setRowHeight(30);
+
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBounds(20, 20, 650, 250);
-        add(scroll);
 
-        // 🔥 ACCEPT BUTTON
-        JButton acceptBtn = new JButton("Accept");
-        acceptBtn.setBounds(150, 300, 120, 30);
-        add(acceptBtn);
+        table.getColumn("Action").setCellRenderer(new Renderer());
+        table.getColumn("Action").setCellEditor(new Editor(new JCheckBox(), table));
 
-        // 🔥 REJECT BUTTON
-        JButton rejectBtn = new JButton("Reject");
-        rejectBtn.setBounds(300, 300, 120, 30);
-        add(rejectBtn);
-
-        JButton completeBtn = new JButton("Completed");
-        completeBtn.setBounds(450, 300, 120, 30);
-        add(completeBtn);
+        add(title, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
 
         loadBookings();
-
-        // 🔥 ACCEPT LOGIC
-        acceptBtn.addActionListener(e -> updateStatus("Accepted"));
-
-        // 🔥 REJECT LOGIC
-        rejectBtn.addActionListener(e -> updateStatus("Rejected"));
-
-        completeBtn.addActionListener(e -> updateStatus("Completed"));
-
-        setLocationRelativeTo(null);
-        setVisible(true);
     }
 
-    private void loadBookings() {
+    private void loadBookings(){
 
         model.setRowCount(0);
 
         BookingController controller = new BookingController();
         List<Object[]> list = controller.getBookingsByProvider(user.getId());
 
-        for (Object[] row : list) {
-            model.addRow(row);
+        for(Object[] row : list){
+            model.addRow(new Object[]{
+                    row[0],row[1],row[2],row[3],row[4],""
+            });
         }
     }
 
-    private void updateStatus(String newStatus) {
+    // ===== RENDER BUTTONS =====
+    class Renderer extends JPanel implements TableCellRenderer {
 
-        int row = table.getSelectedRow();
+        JButton a = new JButton("✔");
+        JButton r = new JButton("✖");
+        JButton c = new JButton("✓");
 
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Select a booking first");
-            return;
+        public Renderer(){
+            setLayout(new FlowLayout());
+            add(a); add(r); add(c);
         }
 
-        int bookingId = (int) model.getValueAt(row, 0);
-        String currentStatus = (String) model.getValueAt(row, 4);
+        public Component getTableCellRendererComponent(JTable t,Object v,
+                                                       boolean s,boolean f,int r,int c){
+            return this;
+        }
+    }
 
-        // 🔒 BLOCK IF ALREADY COMPLETED
-        if (currentStatus.equalsIgnoreCase("Completed")) {
-            JOptionPane.showMessageDialog(this, "This booking is already completed. No changes allowed.");
-            return;
+    // ===== BUTTON ACTION =====
+    class Editor extends DefaultCellEditor {
+
+        JPanel panel;
+        JTable table;
+
+        public Editor(JCheckBox box,JTable table){
+            super(box);
+            this.table = table;
+
+            panel = new JPanel(new FlowLayout());
+
+            JButton a = new JButton("✔");
+            JButton r = new JButton("✖");
+            JButton c = new JButton("✓");
+
+            panel.add(a); panel.add(r); panel.add(c);
+
+            a.addActionListener(e -> update("Accepted"));
+            r.addActionListener(e -> update("Rejected"));
+            c.addActionListener(e -> update("Completed"));
         }
 
-        // 🔁 OPTIONAL: PREVENT SAME STATUS UPDATE
-        if (currentStatus.equalsIgnoreCase(newStatus)) {
-            JOptionPane.showMessageDialog(this, "Already " + newStatus);
-            return;
+        private void update(String status){
+
+            int row = table.getEditingRow();
+            int id = (int)table.getValueAt(row,0);
+
+            BookingController controller = new BookingController();
+            controller.updateBookingStatus(id,status);
+
+            loadBookings();
         }
 
-        // 🔥 CONFIRMATION
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to mark this as " + newStatus + "?",
-                "Confirm",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm != JOptionPane.YES_OPTION) {
-            return;
+        public Component getTableCellEditorComponent(JTable t,Object v,
+                                                     boolean s,int r,int c){
+            return panel;
         }
 
-        // 🔥 CALL CONTROLLER
-        BookingController controller = new BookingController();
-        boolean result = controller.updateBookingStatus(bookingId, newStatus);
-
-        if (result) {
-            JOptionPane.showMessageDialog(this, "Status updated to " + newStatus);
-            loadBookings(); // 🔄 refresh table
-        } else {
-            JOptionPane.showMessageDialog(this, "Update failed!");
-        }
+        public Object getCellEditorValue(){ return ""; }
     }
 }
