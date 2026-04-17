@@ -1,45 +1,54 @@
 package com.servease.ui.components;
 
+import com.servease.model.Service;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-public class ServiceCard extends CardPanel {
+public class ServiceCard extends JPanel {
 
-    public ServiceCard(String name, String desc, double price) {
+    public ServiceCard(Service service, Runnable onClick) {
 
         setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230,230,230)),
+                BorderFactory.createEmptyBorder(10,10,10,10)
+        ));
+        setPreferredSize(new Dimension(250,180));
 
-        JLabel title = new JLabel(name);
-        title.setFont(new Font("Arial", Font.BOLD, 16));
+        // ===== IMAGE =====
+        JLabel imageLabel = new JLabel();
+        imageLabel.setPreferredSize(new Dimension(250,100));
 
-        JLabel priceLbl = new JLabel("₹ " + price);
-        priceLbl.setForeground(Color.GRAY);
+        try {
+            ImageIcon icon = new ImageIcon(service.getImagePath());
+            Image img = icon.getImage().getScaledInstance(250,100,Image.SCALE_SMOOTH);
+            imageLabel.setIcon(new ImageIcon(img));
+        } catch (Exception e) {
+            imageLabel.setText("No Image");
+        }
 
-        JPanel left = new JPanel();
-        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
-        left.setBackground(Color.WHITE);
+        // ===== DETAILS =====
+        JLabel name = new JLabel(service.getName());
+        name.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        left.add(title);
-        left.add(Box.createVerticalStrut(5));
-        left.add(priceLbl);
+        JLabel price = new JLabel("₹ " + service.getPrice());
+        price.setForeground(new Color(33,150,243));
 
-        add(left, BorderLayout.CENTER);
+        JPanel bottom = new JPanel(new GridLayout(2,1));
+        bottom.setBackground(Color.WHITE);
+        bottom.add(name);
+        bottom.add(price);
 
-        // 🔥 CLICK → OPEN POPUP
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                new ServiceDetailsDialog(
-                        (JFrame) SwingUtilities.getWindowAncestor(ServiceCard.this),
-                        name,
-                        desc,
-                        price
-                );
+        add(imageLabel, BorderLayout.NORTH);
+        add(bottom, BorderLayout.CENTER);
+
+        // ===== CLICK =====
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                onClick.run();
             }
         });
-
-        setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 }

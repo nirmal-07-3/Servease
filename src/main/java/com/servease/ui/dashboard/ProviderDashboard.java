@@ -8,86 +8,123 @@ import java.awt.*;
 
 public class ProviderDashboard extends JFrame {
 
-    private JPanel content;
     private User user;
+    private JPanel content;
 
-    public ProviderDashboard(User user) {
+    public ProviderDashboard(User user){
         this.user = user;
 
-        setTitle("Servease - Provider Dashboard");
-        setSize(1200,700);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Provider Dashboard");
+        setSize(1100,650);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // ===== SIDEBAR =====
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(new Color(20,120,220));
-        sidebar.setPreferredSize(new Dimension(220,700));
+        sidebar.setBackground(new Color(33,150,243));
+        sidebar.setPreferredSize(new Dimension(220, getHeight()));
 
         JLabel logo = new JLabel("Servease");
         logo.setForeground(Color.WHITE);
-        logo.setFont(new Font("Arial",Font.BOLD,22));
+        logo.setFont(new Font("Segoe UI", Font.BOLD, 22));
         logo.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
 
         JButton dashboardBtn = createBtn("Dashboard");
         JButton servicesBtn = createBtn("My Services");
-        JButton bookingBtn = createBtn("Bookings");
+        JButton bookingsBtn = createBtn("Bookings");
         JButton logoutBtn = createBtn("Logout");
 
         sidebar.add(logo);
         sidebar.add(dashboardBtn);
         sidebar.add(servicesBtn);
-        sidebar.add(bookingBtn);
+        sidebar.add(bookingsBtn);
         sidebar.add(Box.createVerticalGlue());
         sidebar.add(logoutBtn);
 
-        // ===== HEADER =====
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(Color.WHITE);
-        header.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));
-
-        JLabel title = new JLabel("Provider Dashboard");
-        title.setFont(new Font("Arial",Font.BOLD,20));
-
-        JLabel welcome = new JLabel("Welcome, " + user.getName());
-
-        header.add(title,BorderLayout.WEST);
-        header.add(welcome,BorderLayout.EAST);
-
         // ===== CONTENT =====
         content = new JPanel(new BorderLayout());
+        content.setBackground(new Color(245,245,245));
 
-        add(sidebar,BorderLayout.WEST);
-        add(header,BorderLayout.NORTH);
-        add(content,BorderLayout.CENTER);
-
-        // ===== DEFAULT VIEW =====
-        loadPanel(new DashboardHome(user));
+        content.add(createDashboardPanel());
 
         // ===== ACTIONS =====
-        dashboardBtn.addActionListener(e -> loadPanel(new DashboardHome(user)));
+        dashboardBtn.addActionListener(e -> loadPanel(createDashboardPanel()));
         servicesBtn.addActionListener(e -> loadPanel(new ProviderServicesFrame(user)));
-        bookingBtn.addActionListener(e -> loadPanel(new ProviderBookingsFrame(user)));
+        bookingsBtn.addActionListener(e -> loadPanel(new ProviderBookingsFrame(user)));
 
         logoutBtn.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(
-                    this,"Logout?","Confirm",JOptionPane.YES_NO_OPTION);
-
-            if(confirm==JOptionPane.YES_OPTION){
+            int confirm = JOptionPane.showConfirmDialog(this,"Logout?");
+            if(confirm == JOptionPane.YES_OPTION){
                 dispose();
                 new LoginFrame();
             }
         });
 
+        add(sidebar, BorderLayout.WEST);
+        add(content, BorderLayout.CENTER);
+
         setVisible(true);
+    }
+
+    private JPanel createDashboardPanel(){
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(245,245,245));
+
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBorder(BorderFactory.createEmptyBorder(20,30,10,30));
+        header.setBackground(new Color(245,245,245));
+
+        JLabel title = new JLabel("Provider Dashboard");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+
+        JLabel welcome = new JLabel("Welcome, " + user.getName());
+        welcome.setForeground(Color.GRAY);
+
+        header.add(title, BorderLayout.WEST);
+        header.add(welcome, BorderLayout.EAST);
+
+        JPanel cards = new JPanel(new GridLayout(1,4,20,20));
+        cards.setBorder(BorderFactory.createEmptyBorder(10,30,30,30));
+        cards.setBackground(new Color(245,245,245));
+
+        cards.add(createCard("Services", "3", new Color(66,133,244)));
+        cards.add(createCard("Bookings", "67", new Color(52,168,83)));
+        cards.add(createCard("Rating", "4.7", new Color(251,188,5)));
+        cards.add(createCard("Revenue", "₹4280", new Color(234,67,53)));
+
+        panel.add(header, BorderLayout.NORTH);
+        panel.add(cards, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createCard(String title, String value, Color color){
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+
+        JLabel t = new JLabel(title);
+        t.setForeground(Color.GRAY);
+
+        JLabel v = new JLabel(value);
+        v.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        v.setForeground(color);
+
+        card.add(t);
+        card.add(Box.createVerticalStrut(10));
+        card.add(v);
+
+        return card;
     }
 
     private JButton createBtn(String text){
         JButton btn = new JButton(text);
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE,40));
-        btn.setBackground(new Color(20,120,220));
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE,45));
+        btn.setBackground(new Color(33,150,243));
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));
@@ -97,7 +134,7 @@ public class ProviderDashboard extends JFrame {
 
     private void loadPanel(JPanel panel){
         content.removeAll();
-        content.add(panel,BorderLayout.CENTER);
+        content.add(panel, BorderLayout.CENTER);
         content.revalidate();
         content.repaint();
     }

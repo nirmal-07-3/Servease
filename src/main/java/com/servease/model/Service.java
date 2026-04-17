@@ -7,11 +7,23 @@ public class Service {
     private String name;
     private String description;
     private double price;
+    private String imagePath;
 
     public Service() {
     }
 
     // 🔥 Constructor (FOR ADD)
+
+
+    public Service(int id, int provider_id, String name, String description, double price, String imagePath) {
+        this.id = id;
+        this.provider_id = provider_id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.imagePath = imagePath;
+    }
+
     public Service(int provider_id, String name, String description, double price) {
         this.provider_id = provider_id;
         this.name = name;
@@ -29,6 +41,16 @@ public class Service {
     }
 
     // GETTERS
+
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
     public int getId() { return id; }
     public int getProvider_id() { return provider_id; }
     public String getName() { return name; }

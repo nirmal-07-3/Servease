@@ -4,6 +4,7 @@ import com.servease.config.DBConnection;
 import com.servease.model.Bookings;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -153,6 +154,49 @@ public class BookingDAO {
 
         return null;
     }
+
+
+
+
+    public List<Bookings> getBookingsByUser(int userId) {
+
+        List<Bookings> list = new ArrayList<>();
+
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = "SELECT b.id, b.booking_date, b.status, " +
+                    "s.name AS service_name, u.name AS provider_name " +
+                    "FROM bookings b " +
+                    "JOIN services s ON b.service_id = s.id " +
+                    "JOIN users u ON s.provider_id = u.id " +
+                    "WHERE b.user_id = ?";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, userId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Bookings b = new Bookings();
+
+                b.setId(rs.getInt("id"));
+                b.setBooking_date(rs.getDate("booking_date"));
+                b.setStatus(rs.getString("status"));
+
+                b.setServiceName(rs.getString("service_name"));
+                b.setProviderName(rs.getString("provider_name"));
+
+                list.add(b);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
+    }
+
 
 

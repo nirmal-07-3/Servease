@@ -1,5 +1,6 @@
 package com.servease.controller;
 
+import com.servease.dao.BookingDAO;
 import com.servease.model.Bookings;
 import com.servease.service.BookingService;
 
@@ -24,4 +25,14 @@ public class BookingController {
     public boolean updateBookingStatus(int bookingId,String status){
         return bookingService.updateBookingStatus(bookingId,status);
     }
-}
+
+
+
+
+        private BookingDAO dao = new BookingDAO();
+
+        public List<Bookings> getBookingsByUser(int userId){
+            return dao.getBookingsByUser(userId);
+        }
+    }
+

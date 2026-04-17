@@ -3,161 +3,163 @@ package com.servease.ui.dashboard;
 import com.servease.controller.ServiceController;
 import com.servease.model.Service;
 import com.servease.model.User;
+import com.servease.ui.components.ServiceCard;
 
 import javax.swing.*;
-import javax.swing.table.*;
 import java.awt.*;
 import java.util.List;
 
 public class ProviderServicesFrame extends JPanel {
 
     private User user;
-    private JTable table;
-    private DefaultTableModel model;
+    private JPanel container;
     private ServiceController controller;
 
     public ProviderServicesFrame(User user) {
 
         this.user = user;
-        controller = new ServiceController();
+        this.controller = new ServiceController();
 
         setLayout(new BorderLayout());
         setBackground(new Color(245,245,245));
 
-        // ===== TOP =====
+        // ===== TOP BAR =====
         JPanel top = new JPanel(new BorderLayout());
-        top.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
+        top.setBackground(Color.WHITE);
+        top.setBorder(BorderFactory.createEmptyBorder(15,20,15,20));
 
         JLabel title = new JLabel("My Services");
-        title.setFont(new Font("Arial", Font.BOLD, 18));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
         JButton addBtn = new JButton("+ Add Service");
         addBtn.setBackground(new Color(33,150,243));
         addBtn.setForeground(Color.WHITE);
+        addBtn.setFocusPainted(false);
+        addBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        addBtn.addActionListener(e -> new AddServiceFrame(user, this));
 
         top.add(title, BorderLayout.WEST);
         top.add(addBtn, BorderLayout.EAST);
 
-        // ===== TABLE =====
-        model = new DefaultTableModel(
-                new String[]{"ID","Name","Description","Price","Action"},0
-        );
+        // ===== CONTAINER =====
+        container = new JPanel(new FlowLayout(FlowLayout.LEFT,20,20));
+        container.setBackground(new Color(245,245,245));
 
-        table = new JTable(model);
-        table.setRowHeight(30);
-
-        JScrollPane scroll = new JScrollPane(table);
-
-        table.getColumn("Action").setCellRenderer(new Renderer());
-        table.getColumn("Action").setCellEditor(new Editor(new JCheckBox(), table));
+        JScrollPane scroll = new JScrollPane(container);
+        scroll.setBorder(null);
 
         add(top, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
 
         loadServices();
-
-        addBtn.addActionListener(e -> new AddServiceFrame(user,this));
     }
 
-    void loadServices(){
+    // ===== LOAD SERVICES =====
+    public void loadServices(){
 
-        model.setRowCount(0);
+        container.removeAll();
 
         List<Service> list = controller.getServicesByProviderId(user.getId());
 
         for(Service s : list){
-            model.addRow(new Object[]{
-                    s.getId(),
-                    s.getName(),
-                    s.getDescription(),
-                    s.getPrice(),
-                    ""
-            });
+
+            JPanel card = createServiceCard(s);
+            container.add(card);
         }
+
+        container.revalidate();
+        container.repaint();
     }
 
-    // ===== BUTTON RENDER =====
-    class Renderer extends JPanel implements TableCellRenderer {
+    // ===== CARD DESIGN =====
+    private JPanel createServiceCard(Service s){
 
-        JButton edit = new JButton("✏️");
-        JButton delete = new JButton("🗑️");
+        JPanel card = new JPanel(new BorderLayout());
+        card.setPreferredSize(new Dimension(260,200));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220,220,220)),
+                BorderFactory.createEmptyBorder(10,10,10,10)
+        ));
 
-        public Renderer(){
-            setLayout(new FlowLayout());
-            add(edit);
-            add(delete);
+        // ===== IMAGE =====
+        JLabel image = new JLabel();
+        image.setPreferredSize(new Dimension(260,100));
+
+        try{
+            ImageIcon icon = new ImageIcon(s.getImagePath());
+            Image img = icon.getImage().getScaledInstance(260,100,Image.SCALE_SMOOTH);
+            image.setIcon(new ImageIcon(img));
+        }catch(Exception e){
+            image.setText("No Image");
         }
 
-        public Component getTableCellRendererComponent(JTable table,Object value,
-                                                       boolean isSelected,boolean hasFocus,
-                                                       int row,int col){
-            return this;
-        }
-    }
+        // ===== INFO =====
+        JLabel name = new JLabel(s.getName());
+        name.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-    // ===== BUTTON ACTION =====
-    class Editor extends DefaultCellEditor {
+        JLabel desc = new JLabel("<html>" + s.getDescription() + "</html>");
+        desc.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        desc.setForeground(Color.GRAY);
 
-        JPanel panel;
-        JButton edit,delete;
-        JTable table;
+        JLabel price = new JLabel("₹ " + s.getPrice());
+        price.setForeground(new Color(33,150,243));
 
-        public Editor(JCheckBox box,JTable table){
-            super(box);
-            this.table = table;
+        JPanel info = new JPanel();
+        info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
+        info.setBackground(Color.WHITE);
 
-            panel = new JPanel(new FlowLayout());
+        info.add(name);
+        info.add(desc);
+        info.add(price);
 
-            edit = new JButton("✏️");
-            delete = new JButton("🗑️");
+        // ===== ACTION BUTTONS =====
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        actions.setBackground(Color.WHITE);
 
-            panel.add(edit);
-            panel.add(delete);
+        JButton edit = new JButton("Edit");
+        JButton delete = new JButton("Delete");
 
-            // EDIT
-            edit.addActionListener(e -> {
+        edit.setFocusPainted(false);
+        delete.setFocusPainted(false);
 
-                int row = table.getSelectedRow();
+        // EDIT
+        edit.addActionListener(e -> {
+            new UpdateServiceFrame(s, this);
+        });
 
-                Service s = new Service(
-                        (int)table.getValueAt(row,0),
-                        user.getId(),
-                        (String)table.getValueAt(row,1),
-                        (String)table.getValueAt(row,2),
-                        Double.parseDouble(table.getValueAt(row,3).toString())
-                );
+        // DELETE
+        delete.addActionListener(e -> {
 
-                new UpdateServiceFrame(s, ProviderServicesFrame.this);
-            });
+            int confirm = JOptionPane.showConfirmDialog(
+                    this,
+                    "Delete this service?",
+                    "Confirm",
+                    JOptionPane.YES_NO_OPTION
+            );
 
-            // DELETE
-            delete.addActionListener(e -> {
+            if(confirm == JOptionPane.YES_OPTION){
 
-                int row = table.getSelectedRow();
+                boolean res = controller.deleteService(s.getId(), user.getId());
 
-                int confirm = JOptionPane.showConfirmDialog(null,"Delete?");
-
-                if(confirm==0){
-
-                    int id = (int)table.getValueAt(row,0);
-
-                    boolean res = controller.deleteService(id,user.getId());
-
-                    if(res){
-                        JOptionPane.showMessageDialog(null,"Deleted");
-                        loadServices();
-                    }else{
-                        JOptionPane.showMessageDialog(null,"Failed");
-                    }
+                if(res){
+                    JOptionPane.showMessageDialog(this,"Deleted");
+                    loadServices();
+                } else {
+                    JOptionPane.showMessageDialog(this,"Failed");
                 }
-            });
-        }
+            }
+        });
 
-        public Component getTableCellEditorComponent(JTable table,Object value,
-                                                     boolean isSelected,int row,int col){
-            return panel;
-        }
+        actions.add(edit);
+        actions.add(delete);
 
-        public Object getCellEditorValue(){ return ""; }
+        // ===== ADD TO CARD =====
+        card.add(image, BorderLayout.NORTH);
+        card.add(info, BorderLayout.CENTER);
+        card.add(actions, BorderLayout.SOUTH);
+
+        return card;
     }
 }

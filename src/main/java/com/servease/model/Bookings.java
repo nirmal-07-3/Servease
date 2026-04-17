@@ -9,6 +9,10 @@ public class Bookings {
     private Date booking_date;
     private String status;
 
+
+    private String serviceName;
+    private  String providerName;
+
     public Bookings(int id, int user_id, int service_id, Date booking_date, String status) {
         this.id = id;
         this.user_id = user_id;
@@ -65,5 +69,21 @@ public class Bookings {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public String getProviderName() {
+        return providerName;
+    }
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
     }
 }
