@@ -4,72 +4,138 @@ import com.servease.controller.ServiceController;
 import com.servease.model.Service;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.File;
 
-public class UpdateServiceFrame extends JFrame {
+public class UpdateServiceFrame extends JDialog {
+
+    private JTextField nameField, priceField;
+    private JTextArea descArea;
+    private JLabel imagePreview;
 
     private Service service;
-    private ProviderServicesFrame parent;
+    private ServiceController controller;
 
-    private JTextField nameField,descriptionField, priceField;
-
-    public UpdateServiceFrame(Service service, ProviderServicesFrame parent) {
+    public UpdateServiceFrame(JFrame parent, Service service) {
+        super(parent, "Update Service", true);
 
         this.service = service;
-        this.parent = parent;
+        this.controller = new ServiceController();
 
-        setTitle("Update Service");
-        setSize(400, 250);
-        setLayout(null);
+        setSize(420, 520);
+        setLocationRelativeTo(parent);
+        setLayout(new BorderLayout());
 
-        JLabel nameLabel = new JLabel("Name:");
-        nameLabel.setBounds(30, 30, 100, 25);
-        add(nameLabel);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        panel.setBackground(Color.WHITE);
 
-        JLabel descriptionLabel=new JLabel("Description");
-        descriptionLabel.setBounds(30,50,100,25);
-        add(descriptionLabel);
+        // ===== TITLE =====
+        JLabel title = new JLabel("Update Service");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // ===== FIELDS =====
         nameField = new JTextField(service.getName());
-        nameField.setBounds(130, 30, 200, 25);
-        add(nameField);
+        nameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        nameField.setBorder(BorderFactory.createTitledBorder("Service Name"));
 
-        descriptionField = new JTextField(service.getDescription());
-        descriptionField.setBounds(130, 50, 200, 25);
-        add(descriptionField);
-
-        JLabel priceLabel = new JLabel("Price:");
-        priceLabel.setBounds(30, 80, 100, 25);
-        add(priceLabel);
+        descArea = new JTextArea(service.getDescription());
+        descArea.setBorder(BorderFactory.createTitledBorder("Description"));
+        descArea.setLineWrap(true);
+        descArea.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
 
         priceField = new JTextField(String.valueOf(service.getPrice()));
-        priceField.setBounds(130, 80, 200, 25);
-        add(priceField);
+        priceField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        priceField.setBorder(BorderFactory.createTitledBorder("Price"));
 
-        JButton updateBtn = new JButton("Update");
-        updateBtn.setBounds(130, 140, 120, 30);
-        add(updateBtn);
+        // ===== IMAGE PREVIEW BOX =====
+        imagePreview = new JLabel("Upload Image", SwingConstants.CENTER);
+        imagePreview.setPreferredSize(new Dimension(120,120));
+        imagePreview.setMaximumSize(new Dimension(120,120));
+        imagePreview.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        imagePreview.setOpaque(true);
+        imagePreview.setBackground(new Color(240,240,240));
+        imagePreview.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        updateBtn.addActionListener(e -> {
+        // LOAD EXISTING IMAGE
+        if(service.getImagePath() != null && !service.getImagePath().isEmpty()){
+            ImageIcon icon = new ImageIcon(service.getImagePath());
+            Image img = icon.getImage().getScaledInstance(120,120,Image.SCALE_SMOOTH);
+            imagePreview.setText("");
+            imagePreview.setIcon(new ImageIcon(img));
+        }
 
-            service.setName(nameField.getText());
-            service.setDescription(descriptionField.getText());
-            service.setPrice(Double.parseDouble(priceField.getText()));
+        // ===== UPLOAD BUTTON =====
+        JButton uploadBtn = new JButton("Choose Image");
+        uploadBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            ServiceController controller = new ServiceController();
-            boolean result = controller.updateService(service);
+        uploadBtn.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            int result = chooser.showOpenDialog(this);
 
-            if (result) {
-                JOptionPane.showMessageDialog(this, "Updated Successfully");
+            if(result == JFileChooser.APPROVE_OPTION){
+                File file = chooser.getSelectedFile();
+                service.setImagePath(file.getAbsolutePath());
 
-                parent.loadServices(); // 🔥 refresh
-
-                this.dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Update Failed");
+                ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+                Image img = icon.getImage().getScaledInstance(120,120,Image.SCALE_SMOOTH);
+                imagePreview.setText("");
+                imagePreview.setIcon(new ImageIcon(img));
             }
         });
 
-        setLocationRelativeTo(null);
+        // ===== BUTTON =====
+        JButton updateBtn = new JButton("Update Service");
+        updateBtn.setBackground(new Color(33,150,243));
+        updateBtn.setForeground(Color.WHITE);
+        updateBtn.setFocusPainted(false);
+        updateBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        updateBtn.addActionListener(e -> {
+            try {
+                service.setName(nameField.getText());
+                service.setDescription(descArea.getText());
+                service.setPrice(Double.parseDouble(priceField.getText()));
+
+                boolean result = controller.updateService(service);
+
+                if(result){
+                    JOptionPane.showMessageDialog(this, "Service Updated Successfully");
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Update Failed");
+                }
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Invalid Input");
+            }
+        });
+
+        // ===== ADD COMPONENTS =====
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(15));
+
+        panel.add(nameField);
+        panel.add(Box.createVerticalStrut(10));
+
+        panel.add(priceField);
+        panel.add(Box.createVerticalStrut(10));
+
+        panel.add(descArea);
+        panel.add(Box.createVerticalStrut(15));
+
+        panel.add(imagePreview);
+        panel.add(Box.createVerticalStrut(10));
+
+        panel.add(uploadBtn);
+        panel.add(Box.createVerticalStrut(20));
+
+        panel.add(updateBtn);
+
+        add(panel, BorderLayout.CENTER);
+
         setVisible(true);
     }
 }

@@ -154,12 +154,13 @@ public class ServiceDAO {
         boolean isUpdated=false;
         try{
             Connection conn=DBConnection.getConnection();
-            String query="UPDATE services SET name=?,description=?,price=?  WHERE id=?";
+            String query="UPDATE services SET name=?,description=?,price=?,imagePath=?  WHERE id=?";
             PreparedStatement ps=conn.prepareStatement(query);
             ps.setString(1, service.getName());
             ps.setString(2, service.getDescription());
             ps.setDouble(3, service.getPrice());
-            ps.setInt(4,service.getId());
+            ps.setString(4,service.getImagePath());
+            ps.setInt(5,service.getId());
 
             int row=ps.executeUpdate();
 

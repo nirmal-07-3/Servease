@@ -126,7 +126,8 @@ public class ProviderServicesFrame extends JPanel {
 
         // EDIT
         edit.addActionListener(e -> {
-            new UpdateServiceFrame(s, this);
+            new UpdateServiceFrame((JFrame)
+                    SwingUtilities.getWindowAncestor(this),s);
         });
 
         // DELETE

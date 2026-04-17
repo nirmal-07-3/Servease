@@ -10,12 +10,13 @@ public class UserDashboard extends JFrame {
 
     private User user;
     private JPanel content;
+    private JButton activeBtn;
 
-    public UserDashboard(User user){
+    public UserDashboard(User user) {
         this.user = user;
 
-        setTitle("User Dashboard");
-        setSize(1100,650);
+        setTitle("Servease");
+        setSize(1200, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -23,40 +24,47 @@ public class UserDashboard extends JFrame {
         // ===== SIDEBAR =====
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(new Color(33,150,243));
-        sidebar.setPreferredSize(new Dimension(220, getHeight()));
+        sidebar.setBackground(new Color(18, 52, 86));
+        sidebar.setPreferredSize(new Dimension(230, getHeight()));
 
         JLabel logo = new JLabel("Servease");
         logo.setForeground(Color.WHITE);
         logo.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        logo.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        logo.setBorder(BorderFactory.createEmptyBorder(25, 20, 25, 20));
 
-        JButton dashboardBtn = createBtn("Dashboard");
-        JButton browseBtn = createBtn("Browse Services");
-        JButton bookingBtn = createBtn("My Bookings");
-        JButton logoutBtn = createBtn("Logout");
+        JButton dashboardBtn = createMenuBtn("Dashboard", "icons/dashboard.png");
+        JButton browseBtn = createMenuBtn("Browse Services", "icons/browse.png");
+        JButton bookingBtn = createMenuBtn("My Bookings", "icons/booking.png");
+        JButton notifyBtn = createMenuBtn("Notifications", "icons/notification.png");
+        JButton logoutBtn = createMenuBtn("Logout", "icons/logout.png");
 
         sidebar.add(logo);
         sidebar.add(dashboardBtn);
         sidebar.add(browseBtn);
         sidebar.add(bookingBtn);
+        sidebar.add(notifyBtn);
         sidebar.add(Box.createVerticalGlue());
         sidebar.add(logoutBtn);
 
         // ===== CONTENT =====
         content = new JPanel(new BorderLayout());
-        content.setBackground(new Color(245,245,245));
+        content.setBackground(new Color(245, 247, 250));
 
-        content.add(createDashboardPanel());
+        loadPanel(createDashboardPanel());
 
         // ===== ACTIONS =====
-        dashboardBtn.addActionListener(e -> loadPanel(createDashboardPanel()));
-        browseBtn.addActionListener(e -> loadPanel(new BrowseServicesPanel(user)));
-        bookingBtn.addActionListener(e -> loadPanel(new UserBookingsFrame(user)));
+        dashboardBtn.addActionListener(e -> switchPanel(dashboardBtn, createDashboardPanel()));
+        browseBtn.addActionListener(e -> switchPanel(browseBtn, new BrowseServicesPanel(user)));
+        bookingBtn.addActionListener(e -> switchPanel(bookingBtn, new UserBookingsFrame(user)));
+        notifyBtn.addActionListener(e -> switchPanel(notifyBtn, createNotificationPanel()));
 
         logoutBtn.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this,"Logout?");
-            if(confirm == JOptionPane.YES_OPTION){
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Logout from Servease?",
+                    "Confirm",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
                 dispose();
                 new LoginFrame();
             }
@@ -68,73 +76,203 @@ public class UserDashboard extends JFrame {
         setVisible(true);
     }
 
-    private JPanel createDashboardPanel(){
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(245,245,245));
+    // ===== SWITCH PANEL + ACTIVE BUTTON =====
+    private void switchPanel(JButton btn, JPanel panel) {
+        if (activeBtn != null) {
+            activeBtn.setBackground(new Color(18, 52, 86));
+        }
+        btn.setBackground(new Color(33, 150, 243));
+        activeBtn = btn;
 
-        JPanel header = new JPanel(new BorderLayout());
-        header.setBorder(BorderFactory.createEmptyBorder(20,30,10,30));
-        header.setBackground(new Color(245,245,245));
-
-        JLabel title = new JLabel("User Dashboard");
-        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
-
-        JLabel welcome = new JLabel("Welcome, " + user.getName());
-        welcome.setForeground(Color.GRAY);
-
-        header.add(title, BorderLayout.WEST);
-        header.add(welcome, BorderLayout.EAST);
-
-        JPanel cards = new JPanel(new GridLayout(1,4,20,20));
-        cards.setBorder(BorderFactory.createEmptyBorder(10,30,30,30));
-        cards.setBackground(new Color(245,245,245));
-
-        cards.add(createCard("Bookings", "12", new Color(66,133,244)));
-        cards.add(createCard("Services Used", "8", new Color(52,168,83)));
-        cards.add(createCard("Completed", "10", new Color(251,188,5)));
-        cards.add(createCard("Rating", "4.7", new Color(234,67,53)));
-
-        panel.add(header, BorderLayout.NORTH);
-        panel.add(cards, BorderLayout.CENTER);
-
-        return panel;
+        loadPanel(panel);
     }
 
-    private JPanel createCard(String title, String value, Color color){
-        JPanel card = new JPanel();
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
-
-        JLabel t = new JLabel(title);
-        t.setForeground(Color.GRAY);
-
-        JLabel v = new JLabel(value);
-        v.setFont(new Font("Segoe UI", Font.BOLD, 26));
-        v.setForeground(color);
-
-        card.add(t);
-        card.add(Box.createVerticalStrut(10));
-        card.add(v);
-
-        return card;
-    }
-
-    private JButton createBtn(String text){
-        JButton btn = new JButton(text);
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE,45));
-        btn.setBackground(new Color(33,150,243));
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(10,20,10,20));
-        btn.setHorizontalAlignment(SwingConstants.LEFT);
-        return btn;
-    }
-
-    private void loadPanel(JPanel panel){
+    private void loadPanel(JPanel panel) {
         content.removeAll();
         content.add(panel, BorderLayout.CENTER);
         content.revalidate();
         content.repaint();
+    }
+
+    // ===== MENU BUTTON =====
+    private JButton createMenuBtn(String text, String iconPath) {
+        JButton btn = new JButton(text);
+
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource(iconPath));
+            Image img = icon.getImage().getScaledInstance(18, 18, Image.SCALE_SMOOTH);
+            btn.setIcon(new ImageIcon(img));
+        } catch (Exception ignored) {}
+
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        btn.setBackground(new Color(18, 52, 86));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        // Hover effect
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                if (btn != activeBtn)
+                    btn.setBackground(new Color(30, 70, 120));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                if (btn != activeBtn)
+                    btn.setBackground(new Color(18, 52, 86));
+            }
+        });
+
+        return btn;
+    }
+
+    // ===== DASHBOARD =====
+    private JPanel createDashboardPanel() {
+        JPanel main = new JPanel(new BorderLayout());
+        main.setBackground(new Color(245, 247, 250));
+
+        // TOP BAR
+        JPanel top = new JPanel(new BorderLayout());
+        top.setBackground(Color.WHITE);
+        top.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+
+        JTextField search = new JTextField();
+        search.setPreferredSize(new Dimension(300, 35));
+        search.setBorder(BorderFactory.createTitledBorder("Search services"));
+
+        JLabel userLabel = new JLabel("👤 " + user.getName());
+        userLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+        top.add(search, BorderLayout.WEST);
+        top.add(userLabel, BorderLayout.EAST);
+
+        // CARDS
+        JPanel cardsWrapper = new JPanel();
+        cardsWrapper.setLayout(new BorderLayout());
+        cardsWrapper.setBackground(new Color(245, 247, 250));
+        cardsWrapper.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JPanel cards = new JPanel(new GridLayout(1,4,20,0));
+        cards.setBackground(new Color(245, 247, 250));
+
+        // Bigger cards
+        cards.add(createCard("12", "Bookings Made", "icons/booking.png"));
+        cards.add(createCard("8", "Services Used", "icons/service.png"));
+        cards.add(createCard("10", "Completed", "icons/completed.png"));
+        cards.add(createCard("4.7", "Avg. Rating Given", "icons/rating.png"));
+
+        cardsWrapper.add(cards, BorderLayout.CENTER);
+
+        // LOWER
+        JPanel lower = new JPanel(new GridLayout(1, 2, 20, 20));
+        lower.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        lower.setBackground(new Color(245, 247, 250));
+
+        lower.add(createRecentBookings());
+        lower.add(createNotifications());
+
+        main.add(top, BorderLayout.NORTH);
+        main.add(cardsWrapper, BorderLayout.CENTER);
+        main.add(lower, BorderLayout.SOUTH);
+
+        return main;
+    }
+
+    // ===== CARD =====
+    private JPanel createCard(String value, String label, String iconPath) {
+
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(Color.WHITE);
+
+        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // 🔥 IMPORTANT: CONTROL HEIGHT
+        card.setPreferredSize(new Dimension(200, 140)); // width, height
+        card.setMaximumSize(new Dimension(250, 150));   // prevents stretching
+
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+
+        // ===== ICON =====
+        JLabel iconLabel = new JLabel();
+        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource(iconPath));
+            Image img = icon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            iconLabel.setIcon(new ImageIcon(img));
+        } catch (Exception ignored) {}
+
+        // ===== VALUE =====
+        JLabel val = new JLabel(value);
+        val.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        val.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ===== LABEL =====
+        JLabel txt = new JLabel(label);
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        txt.setForeground(Color.GRAY);
+        txt.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ===== LAYOUT =====
+        card.add(iconLabel);
+        card.add(Box.createVerticalStrut(8));
+        card.add(val);
+        card.add(Box.createVerticalStrut(4));
+        card.add(txt);
+
+        return card;
+    }
+
+    // ===== BOOKINGS =====
+    private JPanel createRecentBookings() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createTitledBorder("Recent Bookings"));
+
+        panel.add(createRow("Home Cleaning", "Completed", new Color(76,175,80)));
+        panel.add(createRow("Plumbing Repair", "Pending", new Color(255,152,0)));
+
+        return panel;
+    }
+
+    private JPanel createRow(String name, String status, Color color) {
+        JPanel row = new JPanel(new BorderLayout());
+        row.setBackground(Color.WHITE);
+        row.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+        JLabel n = new JLabel(name);
+        JLabel s = new JLabel(status);
+        s.setForeground(color);
+
+        row.add(n, BorderLayout.WEST);
+        row.add(s, BorderLayout.EAST);
+
+        return row;
+    }
+
+    // ===== NOTIFICATIONS =====
+    private JPanel createNotifications() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createTitledBorder("Notifications"));
+
+        panel.add(new JLabel("✔ Booking Confirmed"));
+        panel.add(new JLabel("✔ Service Completed"));
+        panel.add(new JLabel("✔ New Offer Available"));
+
+        return panel;
+    }
+
+    private JPanel createNotificationPanel() {
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("All Notifications"));
+        return panel;
     }
 }
