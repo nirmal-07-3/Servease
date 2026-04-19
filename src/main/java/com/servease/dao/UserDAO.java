@@ -69,6 +69,65 @@ public class UserDAO {
         return user;
 
     }
+
+    public boolean updateUserWithoutPassword(User user) {
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = "UPDATE users SET name=?, email=?, phone=? WHERE id=?";
+            PreparedStatement ps = con.prepareStatement(sql);
+
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPhone());
+            ps.setInt(4, user.getId());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateUserWithPassword(User user, String password) {
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = "UPDATE users SET name=?, email=?, phone=?, password=? WHERE id=?";
+            PreparedStatement ps = con.prepareStatement(sql);
+
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPhone());
+            ps.setString(4, password);
+            ps.setInt(5, user.getId());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateProfileImage(int userId, String imagePath) {
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = "UPDATE users SET profile_image=? WHERE id=?";
+            PreparedStatement ps = con.prepareStatement(sql);
+
+            ps.setString(1, imagePath);
+            ps.setInt(2, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 
 

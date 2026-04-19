@@ -36,13 +36,17 @@ public class UserDashboard extends JFrame {
         JButton browseBtn = createMenuBtn("Browse Services", "icons/browse.png");
         JButton bookingBtn = createMenuBtn("My Bookings", "icons/booking.png");
         JButton notifyBtn = createMenuBtn("Notifications", "icons/notification.png");
+        JButton settingsBtn = createMenuBtn("Settings", "icons/settings.png");
         JButton logoutBtn = createMenuBtn("Logout", "icons/logout.png");
+
+
 
         sidebar.add(logo);
         sidebar.add(dashboardBtn);
         sidebar.add(browseBtn);
         sidebar.add(bookingBtn);
         sidebar.add(notifyBtn);
+        sidebar.add(settingsBtn);
         sidebar.add(Box.createVerticalGlue());
         sidebar.add(logoutBtn);
 
@@ -57,6 +61,7 @@ public class UserDashboard extends JFrame {
         browseBtn.addActionListener(e -> switchPanel(browseBtn, new BrowseServicesPanel(user)));
         bookingBtn.addActionListener(e -> switchPanel(bookingBtn, new UserBookingsFrame(user)));
         notifyBtn.addActionListener(e -> switchPanel(notifyBtn, createNotificationPanel()));
+        settingsBtn.addActionListener(e -> switchPanel(settingsBtn, new SettingsPanel(user)));
 
         logoutBtn.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
@@ -141,7 +146,16 @@ public class UserDashboard extends JFrame {
         search.setPreferredSize(new Dimension(300, 35));
         search.setBorder(BorderFactory.createTitledBorder("Search services"));
 
-        JLabel userLabel = new JLabel("👤 " + user.getName());
+        JLabel userLabel = new JLabel(" " + user.getName());
+        userLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("icons/user.png"));
+            Image img = icon.getImage().getScaledInstance(18, 18, Image.SCALE_SMOOTH);
+            userLabel.setIcon(new ImageIcon(img));
+        } catch (Exception e) {
+            System.out.println("User icon not found");
+        }
         userLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         top.add(search, BorderLayout.WEST);

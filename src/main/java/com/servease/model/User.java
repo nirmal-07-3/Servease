@@ -7,6 +7,7 @@ public class User {
     private String password;
     private String phone;
     private String role;
+    private String profileImage;
 
     public User(){}
 
@@ -27,6 +28,18 @@ public class User {
         this.password = password;
         this.phone=phone;
         this.role = role;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 
     public int getId() {

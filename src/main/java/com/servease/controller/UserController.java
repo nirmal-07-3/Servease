@@ -1,5 +1,6 @@
 package com.servease.controller;
 
+import com.servease.dao.UserDAO;
 import com.servease.model.User;
 import com.servease.service.UserService;
 import com.servease.ui.dashboard.AdminDashboard;
@@ -19,6 +20,31 @@ public class UserController {
         public User loginUser(String email, String password) {
 
             return userService.loginUser(email, password);
+        }
+
+
+
+        private UserDAO dao = new UserDAO();
+
+        public boolean updateUser(User user, String password) {
+
+            // If password empty → don’t change
+            if (password == null || password.isEmpty()) {
+                return dao.updateUserWithoutPassword(user);
+            }
+
+            // Hash password
+            String hashed = hashPassword(password);
+            return dao.updateUserWithPassword(user, hashed);
+        }
+
+        // SIMPLE HASH (production basic)
+        private String hashPassword(String password) {
+            return Integer.toHexString(password.hashCode());
+        }
+
+        public boolean updateProfileImage(int userId,String path){
+            return dao.updateProfileImage(userId,path);
         }
     }
 

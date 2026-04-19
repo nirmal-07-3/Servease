@@ -40,29 +40,40 @@ public class ServiceDAO {
 
     public List<Service> getAllServices(){
 
-        List<Service> services =new ArrayList<>();
+        List<Service> services = new ArrayList<>();
 
         try{
-            Connection conn=DBConnection.getConnection();
-            String query="SELECT * FROM services";
-            Statement statement=conn.createStatement();
-            ResultSet rs=statement.executeQuery(query);
+            Connection conn = DBConnection.getConnection();
+            String query = "SELECT * FROM services";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
 
-            while (rs.next()){
-                Service service=new Service();
+            while(rs.next()){
+                Service s = new Service();
 
-                service.setId(rs.getInt("id"));
-                service.setProvider_id(rs.getInt("provider_id"));
-                service.setName(rs.getString("name"));
-                service.setDescription(rs.getString("description"));
-                service.setPrice(rs.getDouble("price"));
+                s.setId(rs.getInt("id"));
+                s.setProvider_id(rs.getInt("provider_id"));
+                s.setName(rs.getString("name"));
+                s.setDescription(rs.getString("description"));
+                s.setPrice(rs.getDouble("price"));
 
-                services.add(service);
+                // ✅ IMAGE
+                try{
+                    s.setImagePath(rs.getString("imagePath"));
+                }catch(Exception ignored){}
+
+                // ✅ RATING
+                try{
+                    s.setRating(rs.getDouble("rating"));
+                }catch(Exception ignored){}
+
+                services.add(s);
             }
 
-        } catch (SQLException e) {
+        }catch(Exception e){
             e.printStackTrace();
         }
+
         return services;
     }
 
@@ -174,7 +185,35 @@ public class ServiceDAO {
         }
         return isUpdated;
     }
-    
+
+    public List<Service> getServicesByCategory(String category){
+        List<Service> list = new ArrayList<>();
+
+        try(Connection con = DBConnection.getConnection()){
+            String sql = "SELECT * FROM services WHERE name LIKE ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, "%" + category + "%");
+
+            ResultSet rs = ps.executeQuery();
+
+            while(rs.next()){
+                Service s = new Service();
+                s.setId(rs.getInt("id"));
+                s.setName(rs.getString("name"));
+                s.setDescription(rs.getString("description"));
+                s.setPrice(rs.getDouble("price"));
+                list.add(s);
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+
+
+
 
 
 }

@@ -8,6 +8,8 @@ public class Service {
     private String description;
     private double price;
     private String imagePath;
+    private String providerName;
+    private double rating;
 
     public Service() {
     }
@@ -42,6 +44,22 @@ public class Service {
 
     // GETTERS
 
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public String getProviderName() {
+        return providerName;
+    }
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
+    }
 
     public String getImagePath() {
         return imagePath;

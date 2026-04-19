@@ -1,17 +1,21 @@
 package com.servease.ui.dashboard;
 
 import com.servease.controller.BookingController;
+import com.servease.controller.ServiceController;
 import com.servease.model.Bookings;
+import com.servease.model.Service;
 import com.servease.model.User;
 
 import javax.swing.*;
+import javax.swing.table.*;
 import java.awt.*;
 import java.util.List;
 
 public class UserBookingsFrame extends JPanel {
 
     private User user;
-    private JPanel container;
+    private JTable table;
+    private DefaultTableModel model;
     private BookingController controller;
 
     public UserBookingsFrame(User user) {
@@ -19,91 +23,202 @@ public class UserBookingsFrame extends JPanel {
         this.controller = new BookingController();
 
         setLayout(new BorderLayout());
-        setBackground(new Color(245,245,245));
+        setBackground(new Color(245,247,250));
 
-        JPanel top = new JPanel(new BorderLayout());
-        top.setBackground(Color.WHITE);
-        top.setBorder(BorderFactory.createEmptyBorder(15,20,15,20));
+        add(createHeader(), BorderLayout.NORTH);
+        add(createTableSection(), BorderLayout.CENTER);
+    }
+
+    // ===== HEADER =====
+    private JPanel createHeader() {
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setBackground(Color.WHITE);
+        header.setBorder(BorderFactory.createEmptyBorder(20,25,20,25));
 
         JLabel title = new JLabel("My Bookings");
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        top.add(title, BorderLayout.WEST);
 
-        container = new JPanel(new FlowLayout(FlowLayout.LEFT,20,20));
-        container.setBackground(new Color(245,245,245));
+        JLabel sub = new JLabel("Track all your service bookings and their status.");
+        sub.setForeground(Color.GRAY);
 
-        JScrollPane scroll = new JScrollPane(container);
-        scroll.setBorder(null);
+        header.add(title);
+        header.add(sub);
 
-        add(top, BorderLayout.NORTH);
-        add(scroll, BorderLayout.CENTER);
+        return header;
+    }
+
+    // ===== TABLE SECTION =====
+    private JPanel createTableSection() {
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(245,247,250));
+        panel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+
+        String[] cols = {"Booking ID","Service","Provider","Date & Time","Amount","Status","Action"};
+
+        model = new DefaultTableModel(cols, 0);
+        table = new JTable(model);
+
+        table.setRowHeight(45);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0,0));
+
+        // STATUS COLOR
+        table.getColumn("Status").setCellRenderer(new StatusRenderer());
+
+        // ACTION BUTTON
+        table.getColumn("Action").setCellRenderer(new ButtonRenderer());
+        table.getColumn("Action").setCellEditor(new ButtonEditor(new JCheckBox()));
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(230,230,230)));
+
+        panel.add(scroll, BorderLayout.CENTER);
 
         loadBookings();
+
+        return panel;
     }
 
+    // ===== LOAD DATA =====
     private void loadBookings() {
-        container.removeAll();
 
-        List<Bookings> list = controller.getBookingsByUser(user.getId());
+        model.setRowCount(0);
 
-        for(Bookings b : list){
-            container.add(createBookingCard(b));
+        // ===== CONTROLLERS =====
+        BookingController bookingController = new BookingController();
+        ServiceController serviceController = new ServiceController();
+
+        // ===== FETCH BOOKINGS =====
+        List<Bookings> list = bookingController.getBookingsByUser(user.getId());
+
+        for (Bookings b : list) {
+
+            // ===== FETCH SERVICE FOR PRICE =====
+            Service service = serviceController.getServiceById(b.getService_id());
+
+            String priceText = "₹ --";
+
+            if (service != null) {
+                priceText = "₹ " + service.getPrice();
+            }
+
+            // ===== ADD ROW =====
+            model.addRow(new Object[]{
+                    "BK-" + b.getId(),
+                    b.getServiceName(),
+                    b.getProviderName(),
+                    b.getBooking_date(),
+                    priceText,
+                    b.getStatus(),
+                    getActionText(b.getStatus())
+            });
         }
-
-        container.revalidate();
-        container.repaint();
     }
 
-    private JPanel createBookingCard(Bookings b){
+    private String getActionText(String status) {
+        switch (status.toLowerCase()) {
+            case "completed": return "Review";
+            case "pending": return "Cancel";
+            case "in progress": return "Track";
+            case "cancelled": return "Re-book";
+            default: return "-";
+        }
+    }
 
-        JPanel card = new JPanel(new BorderLayout());
-        card.setPreferredSize(new Dimension(350,170));
-        card.setBackground(Color.WHITE);
+    // ===== STATUS RENDERER =====
+    class StatusRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
 
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220,220,220)),
-                BorderFactory.createEmptyBorder(15,15,15,15)
-        ));
+            JLabel label = new JLabel(value.toString(), SwingConstants.CENTER);
+            label.setOpaque(true);
+            label.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        JLabel service = new JLabel(b.getServiceName());
-        service.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            String status = value.toString().toLowerCase();
 
-        JLabel provider = new JLabel("By " + b.getProviderName());
-        provider.setForeground(Color.GRAY);
+            switch (status) {
+                case "completed":
+                    label.setBackground(new Color(200,230,201));
+                    label.setForeground(new Color(56,142,60));
+                    break;
 
-        JLabel date = new JLabel("📅 " + b.getBooking_date());
+                case "pending":
+                    label.setBackground(new Color(255,224,178));
+                    label.setForeground(new Color(230,81,0));
+                    break;
 
-        JLabel status = new JLabel(b.getStatus());
-        status.setOpaque(true);
-        status.setForeground(Color.WHITE);
-        status.setBorder(BorderFactory.createEmptyBorder(5,12,5,12));
+                case "in progress":
+                    label.setBackground(new Color(187,222,251));
+                    label.setForeground(new Color(25,118,210));
+                    break;
 
-        if(b.getStatus().equalsIgnoreCase("Pending")){
-            status.setBackground(new Color(255,152,0));
-        } else if(b.getStatus().equalsIgnoreCase("Accepted")){
-            status.setBackground(new Color(33,150,243));
-        } else if(b.getStatus().equalsIgnoreCase("Completed")){
-            status.setBackground(new Color(76,175,80));
-        } else {
-            status.setBackground(new Color(244,67,54));
+                case "cancelled":
+                    label.setBackground(new Color(255,205,210));
+                    label.setForeground(new Color(198,40,40));
+                    break;
+
+                default:
+                    label.setBackground(Color.LIGHT_GRAY);
+            }
+
+            return label;
+        }
+    }
+
+    // ===== BUTTON RENDERER =====
+    class ButtonRenderer extends JButton implements TableCellRenderer {
+        public ButtonRenderer() {
+            setOpaque(true);
         }
 
-        JPanel left = new JPanel();
-        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
-        left.setBackground(Color.WHITE);
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
 
-        left.add(service);
-        left.add(provider);
-        left.add(Box.createVerticalStrut(10));
-        left.add(date);
+            setText(value.toString());
+            setBackground(new Color(33,150,243));
+            setForeground(Color.WHITE);
 
-        JPanel right = new JPanel(new BorderLayout());
-        right.setBackground(Color.WHITE);
-        right.add(status, BorderLayout.NORTH);
+            return this;
+        }
+    }
 
-        card.add(left, BorderLayout.CENTER);
-        card.add(right, BorderLayout.EAST);
+    // ===== BUTTON EDITOR =====
+    class ButtonEditor extends DefaultCellEditor {
 
-        return card;
+        private JButton button;
+        private String label;
+
+        public ButtonEditor(JCheckBox checkBox) {
+            super(checkBox);
+
+            button = new JButton();
+            button.setFocusPainted(false);
+
+            button.addActionListener(e -> handleAction(label));
+        }
+
+        public Component getTableCellEditorComponent(JTable table, Object value,
+                                                     boolean isSelected, int row, int column) {
+
+            label = value.toString();
+            button.setText(label);
+            return button;
+        }
+
+        public Object getCellEditorValue() {
+            return label;
+        }
+
+        private void handleAction(String action) {
+            JOptionPane.showMessageDialog(null, action + " clicked");
+        }
     }
 }

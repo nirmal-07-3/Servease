@@ -1,5 +1,6 @@
 package com.servease.controller;
 
+import com.servease.dao.ServiceDAO;
 import com.servease.model.Service;
 import com.servease.service.ServiceManager;
 import com.servease.service.UserService;
@@ -12,6 +13,7 @@ import java.util.List;
 public class ServiceController {
 
     private ServiceManager serviceManager = new ServiceManager();
+    private ServiceDAO serviceDAO=new ServiceDAO();
 
     public boolean addService(Service service) {
 
@@ -35,5 +37,9 @@ public class ServiceController {
     public boolean updateService(Service service){
 
         return serviceManager.updateService(service);
+    }
+
+    public Service getServiceById(int id) {
+        return serviceDAO.getServiceById(id);
     }
 }
