@@ -3,159 +3,64 @@ package com.servease.ui.dashboard;
 import com.servease.controller.BookingController;
 import com.servease.controller.ServiceController;
 import com.servease.model.User;
-import com.servease.ui.auth.LoginFrame;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-public class ProviderDashboard extends JFrame {
+public class ProviderDashboardHomePanel extends JPanel {
 
     private User user;
-    private JPanel content;
-    private JButton activeBtn;
 
     private BookingController bookingController = new BookingController();
     private ServiceController serviceController = new ServiceController();
 
-    public ProviderDashboard(User user) {
+    public ProviderDashboardHomePanel(User user) {
 
         this.user = user;
 
-        setTitle("Servease Provider");
-        setSize(1200, 700);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        setBackground(new Color(245, 247, 250));
 
-        // ===== SIDEBAR =====
-        JPanel sidebar = new JPanel();
-        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(new Color(18, 52, 86));
-        sidebar.setPreferredSize(new Dimension(230, getHeight()));
-
-        JLabel logo = new JLabel("Servease");
-        logo.setForeground(Color.WHITE);
-        logo.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        logo.setBorder(BorderFactory.createEmptyBorder(25, 20, 25, 20));
-
-        JButton dashboardBtn = createMenuBtn("Dashboard");
-        JButton servicesBtn = createMenuBtn("My Services");
-        JButton bookingBtn = createMenuBtn("Bookings");
-        JButton logoutBtn = createMenuBtn("Logout");
-
-        sidebar.add(logo);
-        sidebar.add(dashboardBtn);
-        sidebar.add(servicesBtn);
-        sidebar.add(bookingBtn);
-        sidebar.add(Box.createVerticalGlue());
-        sidebar.add(logoutBtn);
-
-        // ===== CONTENT =====
-        content = new JPanel(new BorderLayout());
-        content.setBackground(new Color(245, 247, 250));
-
-        loadPanel(createDashboardPanel());
-
-        // ===== ACTIONS =====
-        dashboardBtn.addActionListener(e -> switchPanel(dashboardBtn, new ProviderDashboardHomePanel(user)));
-        servicesBtn.addActionListener(e -> switchPanel(servicesBtn, new ProviderServicesPanel(user)));
-        bookingBtn.addActionListener(e -> switchPanel(bookingBtn, new ProviderBookingsPanel(user)));
-
-        logoutBtn.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "Logout from Servease?",
-                    "Confirm",
-                    JOptionPane.YES_NO_OPTION);
-
-            if (confirm == JOptionPane.YES_OPTION) {
-                dispose();
-                new LoginFrame();
-            }
-        });
-
-        add(sidebar, BorderLayout.WEST);
-        add(content, BorderLayout.CENTER);
-
-        setVisible(true);
+        add(createTopBar(), BorderLayout.NORTH);
+        add(createCenterContent(), BorderLayout.CENTER);
     }
 
-    // ===== SWITCH PANEL =====
-    private void switchPanel(JButton btn, JPanel panel) {
+    // ===== TOP BAR =====
+    private JPanel createTopBar() {
 
-        if (activeBtn != null) {
-            activeBtn.setBackground(new Color(18, 52, 86));
-        }
-
-        btn.setBackground(new Color(33, 150, 243));
-        activeBtn = btn;
-
-        loadPanel(panel);
-    }
-
-    private void loadPanel(JPanel panel) {
-        content.removeAll();
-        content.add(panel, BorderLayout.CENTER);
-        content.revalidate();
-        content.repaint();
-    }
-
-    // ===== MENU BUTTON =====
-    private JButton createMenuBtn(String text) {
-
-        JButton btn = new JButton(text);
-
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-        btn.setBackground(new Color(18, 52, 86));
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setHorizontalAlignment(SwingConstants.LEFT);
-        btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                if (btn != activeBtn)
-                    btn.setBackground(new Color(30, 70, 120));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                if (btn != activeBtn)
-                    btn.setBackground(new Color(18, 52, 86));
-            }
-        });
-
-        return btn;
-    }
-
-    // ===== DASHBOARD PANEL =====
-    private JPanel createDashboardPanel() {
-
-        JPanel main = new JPanel(new BorderLayout());
-        main.setBackground(new Color(245, 247, 250));
-
-        // ===== TOP BAR =====
         JPanel top = new JPanel(new BorderLayout());
         top.setBackground(Color.WHITE);
         top.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
         JTextField search = new JTextField();
         search.setPreferredSize(new Dimension(300, 35));
-        search.setBorder(BorderFactory.createTitledBorder("Search"));
+        search.setBorder(BorderFactory.createTitledBorder("Search services"));
 
-        JLabel userLabel = new JLabel(user.getName());
+        JLabel userLabel = new JLabel(" " + user.getName());
         userLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         top.add(search, BorderLayout.WEST);
         top.add(userLabel, BorderLayout.EAST);
 
+        return top;
+    }
+
+    // ===== CENTER =====
+    private JPanel createCenterContent() {
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setBackground(new Color(245, 247, 250));
+
         // ===== FETCH DATA =====
         List<Object[]> bookings = bookingController.getBookingsByProvider(user.getId());
-        int totalBookings = bookings.size();
 
+        int totalBookings = bookings.size();
         int completed = 0;
         double earnings = 0;
 
         for (Object[] b : bookings) {
+
             String status = b[5].toString();
 
             if (status.equalsIgnoreCase("Completed")) {
@@ -171,12 +76,12 @@ public class ProviderDashboard extends JFrame {
         cards.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         cards.setBackground(new Color(245, 247, 250));
 
-        cards.add(createCard(String.valueOf(totalServices), "Services"));
-        cards.add(createCard(String.valueOf(totalBookings), "Bookings"));
+        cards.add(createCard(String.valueOf(totalServices), "Total Services"));
+        cards.add(createCard(String.valueOf(totalBookings), "Total Bookings"));
         cards.add(createCard(String.valueOf(completed), "Completed"));
         cards.add(createCard("₹ " + earnings, "Earnings"));
 
-        // ===== LOWER SECTION =====
+        // ===== LOWER =====
         JPanel lower = new JPanel(new GridLayout(1, 2, 20, 20));
         lower.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
         lower.setBackground(new Color(245, 247, 250));
@@ -184,11 +89,10 @@ public class ProviderDashboard extends JFrame {
         lower.add(createRecentBookings(bookings));
         lower.add(createNotifications(bookings));
 
-        main.add(top, BorderLayout.NORTH);
-        main.add(cards, BorderLayout.CENTER);
-        main.add(lower, BorderLayout.SOUTH);
+        wrapper.add(cards, BorderLayout.NORTH);
+        wrapper.add(lower, BorderLayout.CENTER);
 
-        return main;
+        return wrapper;
     }
 
     // ===== CARD =====

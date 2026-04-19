@@ -109,7 +109,7 @@ public class UserBookingsFrame extends JPanel {
 
             // ===== ADD ROW =====
             model.addRow(new Object[]{
-                    "BK-" + b.getId(),
+                     b.getId(),
                     b.getServiceName(),
                     b.getProviderName(),
                     b.getBooking_date(),

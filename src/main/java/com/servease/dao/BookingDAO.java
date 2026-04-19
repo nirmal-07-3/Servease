@@ -80,28 +80,31 @@ public class BookingDAO {
 
         List<Object[]> list = new ArrayList<>();
 
-        try {
-            Connection conn = DBConnection.getConnection();
+        try (Connection con = DBConnection.getConnection()) {
 
-            String sql = "SELECT b.id, s.name AS service_name, u.name AS user_name, b.booking_date, b.status " +
+            String sql = "SELECT b.id, u.name, s.name, b.booking_date, s.price, b.status " +
                     "FROM bookings b " +
-                    "JOIN services s ON b.service_id = s.id " +
                     "JOIN users u ON b.user_id = u.id " +
+                    "JOIN services s ON b.service_id = s.id " +
                     "WHERE s.provider_id = ?";
 
-            PreparedStatement ps = conn.prepareStatement(sql);
+            PreparedStatement ps = con.prepareStatement(sql);
             ps.setInt(1, providerId);
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                list.add(new Object[]{
-                        rs.getInt("id"),
-                        rs.getString("service_name"),
-                        rs.getString("user_name"),
-                        rs.getDate("booking_date"),
-                        rs.getString("status")
-                });
+
+                Object[] row = new Object[6];
+
+                row[0] = rs.getInt(1);      // booking id
+                row[1] = rs.getString(2);   // customer name
+                row[2] = rs.getString(3);   // service name
+                row[3] = rs.getString(4);   // date
+                row[4] = rs.getDouble(5);   // price
+                row[5] = rs.getString(6);   // status
+
+                list.add(row);
             }
 
         } catch (Exception e) {
@@ -196,6 +199,8 @@ public class BookingDAO {
 
         return list;
     }
+
+
     }
 
 
