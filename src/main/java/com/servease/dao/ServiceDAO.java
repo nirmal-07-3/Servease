@@ -77,20 +77,30 @@ public class ServiceDAO {
         return services;
     }
 
-    public List<Service> getServicesByProviderId(int provider_id){
+    public List<Service> getServicesByProviderId(int provider_id) {
 
-        List<Service> services =new ArrayList<>();
+        List<Service> services = new ArrayList<>();
 
-        try{
-            Connection conn=DBConnection.getConnection();
-            String query="SELECT * FROM services WHERE provider_id=?";
-            PreparedStatement ps=conn.prepareStatement(query);
-            ps.setInt(1,provider_id);
+        try {
+            Connection conn = DBConnection.getConnection();
 
-            ResultSet rs= ps.executeQuery();
+            String query =
+                    "SELECT s.id, s.provider_id, s.name, s.description, s.price, " +
+                            "IFNULL(AVG(r.rating),0) AS avg_rating, " +
+                            "COUNT(r.id) AS total_reviews " +
+                            "FROM services s " +
+                            "LEFT JOIN reviews r ON s.id = r.service_id " +
+                            "WHERE s.provider_id = ? " +
+                            "GROUP BY s.id";
 
-            while (rs.next()){
-                Service service=new Service();
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setInt(1, provider_id);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Service service = new Service();
 
                 service.setId(rs.getInt("id"));
                 service.setProvider_id(rs.getInt("provider_id"));
@@ -98,12 +108,19 @@ public class ServiceDAO {
                 service.setDescription(rs.getString("description"));
                 service.setPrice(rs.getDouble("price"));
 
+                // ⭐ FINAL RATING FIX
+                service.setRating(rs.getDouble("avg_rating"));
+
+                // ⭐ OPTIONAL (if you add field)
+                // service.setTotalReviews(rs.getInt("total_reviews"));
+
                 services.add(service);
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
         return services;
     }
 

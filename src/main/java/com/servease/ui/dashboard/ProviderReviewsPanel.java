@@ -1,7 +1,6 @@
 package com.servease.ui.dashboard;
 
-import com.servease.dao.ServiceDAO;
-import com.servease.model.Service;
+import com.servease.dao.ReviewDAO;
 import com.servease.model.User;
 
 import javax.swing.*;
@@ -11,138 +10,186 @@ import java.util.List;
 public class ProviderReviewsPanel extends JPanel {
 
     private User user;
-    private ServiceDAO serviceDAO;
+    private ReviewDAO reviewDAO = new ReviewDAO();
 
     public ProviderReviewsPanel(User user) {
         this.user = user;
-        this.serviceDAO = new ServiceDAO();
 
         setLayout(new BorderLayout());
         setBackground(new Color(245, 247, 250));
 
-        add(createTop(), BorderLayout.NORTH);
-        add(createContent(), BorderLayout.CENTER);
+        add(createHeader(), BorderLayout.NORTH);
+        add(createBody(), BorderLayout.CENTER);
     }
 
-    // ===== TOP =====
-    private JPanel createTop() {
-        JPanel top = new JPanel(new BorderLayout());
-        top.setBackground(Color.WHITE);
-        top.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+    // ===== HEADER =====
+    private JPanel createHeader() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));
 
         JLabel title = new JLabel("Reviews");
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
-        top.add(title, BorderLayout.WEST);
+        JLabel sub = new JLabel("Customer reviews on your services.");
+        sub.setForeground(Color.GRAY);
 
-        return top;
+        panel.add(title);
+        panel.add(sub);
+
+        return panel;
     }
 
-    // ===== MAIN CONTENT =====
-    private JScrollPane createContent() {
+    // ===== BODY =====
+    private JPanel createBody() {
 
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-        container.setBackground(new Color(245, 247, 250));
+        JPanel main = new JPanel(new BorderLayout());
+        main.setBackground(new Color(245,247,250));
+        main.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
 
-        // ===== STATS CARDS =====
-        container.add(createStatsCards());
+        List<Object[]> reviews = reviewDAO.getReviewsByProvider(user.getId());
 
-        // ===== REVIEWS LIST =====
-        List<Service> services = serviceDAO.getServicesByProviderId(user.getId());
+        main.add(createStats(reviews), BorderLayout.NORTH);
+        main.add(createReviewList(reviews), BorderLayout.CENTER);
 
-        for (Service s : services) {
-            container.add(createReviewCard(s));
-        }
-
-        return new JScrollPane(container);
+        return main;
     }
 
     // ===== STATS =====
-    private JPanel createStatsCards() {
-        JPanel cards = new JPanel(new GridLayout(1, 3, 20, 0));
-        cards.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        cards.setBackground(new Color(245, 247, 250));
+    private JPanel createStats(List<Object[]> list) {
 
-        List<Service> services = serviceDAO.getServicesByProviderId(user.getId());
+        int total = list.size();
+        double sum = 0;
+        int fiveStar = 0;
 
-        int totalReviews = services.size();
-        double avg = services.stream().mapToDouble(Service::getRating).average().orElse(0);
-        long fiveStar = services.stream().filter(s -> s.getRating() >= 4.5).count();
+        for (Object[] r : list) {
+            double rating = (double) r[0];
+            sum += rating;
+            if (rating == 5.0) fiveStar++;
+        }
 
-        cards.add(createCard(String.valueOf(totalReviews), "Total Reviews"));
-        cards.add(createCard(String.format("%.1f", avg), "Avg Rating"));
-        cards.add(createCard(String.valueOf(fiveStar), "5★ Reviews"));
+        double avg = total == 0 ? 0 : sum / total;
 
-        return cards;
+        JPanel panel = new JPanel(new GridLayout(1,3,20,0));
+        panel.setBackground(new Color(245,247,250));
+
+        panel.add(createStatCard(String.valueOf(total), "Total Reviews"));
+        panel.add(createStatCard(String.format("%.1f", avg), "Avg Rating"));
+        panel.add(createStatCard(String.valueOf(fiveStar), "5★ Reviews"));
+
+        return panel;
     }
 
-    private JPanel createCard(String value, String label) {
-        JPanel card = new JPanel();
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220,220,220)),
-                BorderFactory.createEmptyBorder(15,15,15,15)
-        ));
+    private JPanel createStatCard(String value, String label) {
 
-        JLabel v = new JLabel(value);
-        v.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        v.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel l = new JLabel(label);
-        l.setForeground(Color.GRAY);
-        l.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        card.add(v);
-        card.add(Box.createVerticalStrut(5));
-        card.add(l);
-
-        return card;
-    }
-
-    // ===== REVIEW CARD =====
-    private JPanel createReviewCard(Service s) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(230,230,230)),
                 BorderFactory.createEmptyBorder(15,15,15,15)
         ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
 
-        // LEFT
+        JLabel val = new JLabel(value);
+        val.setFont(new Font("Segoe UI", Font.BOLD, 22));
+
+        JLabel lbl = new JLabel(label);
+        lbl.setForeground(Color.GRAY);
+
+        JPanel text = new JPanel();
+        text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
+        text.setBackground(Color.WHITE);
+
+        text.add(val);
+        text.add(lbl);
+
+        card.add(text, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    // ===== REVIEW LIST =====
+    private JScrollPane createReviewList(List<Object[]> list) {
+
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setBackground(new Color(245,247,250));
+
+        if (list.isEmpty()) {
+            JLabel empty = new JLabel("No reviews yet");
+            empty.setForeground(Color.GRAY);
+            empty.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+            container.add(empty);
+        }
+
+        for (Object[] r : list) {
+            container.add(createReviewCard(r));
+            container.add(Box.createVerticalStrut(15));
+        }
+
+        JScrollPane scroll = new JScrollPane(container);
+        scroll.setBorder(null);
+
+        return scroll;
+    }
+
+    // ===== REVIEW CARD =====
+    private JPanel createReviewCard(Object[] r) {
+
+        double rating = (double) r[0];
+        String comment = (String) r[1];
+        String serviceName = (String) r[2];
+        String userName = (String) r[3];
+        String date = r[4].toString();
+
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230,230,230)),
+                BorderFactory.createEmptyBorder(15,15,15,15)
+        ));
+
+        // LEFT INFO
         JPanel left = new JPanel();
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         left.setBackground(Color.WHITE);
 
-        JLabel name = new JLabel(s.getName());
+        JLabel name = new JLabel(userName);
         name.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        JLabel desc = new JLabel(s.getDescription());
-        desc.setForeground(Color.GRAY);
+        JLabel service = new JLabel(serviceName + " • " + date);
+        service.setForeground(Color.GRAY);
+
+        JLabel commentLbl = new JLabel("<html>" + comment + "</html>");
 
         left.add(name);
-        left.add(desc);
+        left.add(service);
+        left.add(Box.createVerticalStrut(5));
+        left.add(commentLbl);
 
-        // RIGHT (Stars)
-        JLabel rating = new JLabel(getStars(s.getRating()));
-        rating.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 16));
+        // RIGHT STARS
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        right.setBackground(Color.WHITE);
 
-        card.add(left, BorderLayout.WEST);
-        card.add(rating, BorderLayout.EAST);
+        JLabel stars = new JLabel(getStars(rating));
+        stars.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        stars.setForeground(new Color(255,193,7));
+
+        right.add(stars);
+
+        card.add(left, BorderLayout.CENTER);
+        card.add(right, BorderLayout.EAST);
 
         return card;
     }
 
     // ===== STAR GENERATOR =====
     private String getStars(double rating) {
-        int full = (int) rating;
-        StringBuilder stars = new StringBuilder();
-
-        for (int i = 0; i < full; i++) stars.append("★");
-        for (int i = full; i < 5; i++) stars.append("☆");
-
-        return stars.toString();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            if (i < rating) sb.append("★");
+            else sb.append("☆");
+        }
+        return sb.toString();
     }
 }

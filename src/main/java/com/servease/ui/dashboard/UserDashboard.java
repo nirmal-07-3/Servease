@@ -63,7 +63,7 @@ public class UserDashboard extends JFrame {
         dashboardBtn.addActionListener(e -> switchPanel(dashboardBtn, createDashboardPanel()));
         browseBtn.addActionListener(e -> switchPanel(browseBtn, new BrowseServicesPanel(user)));
         bookingBtn.addActionListener(e -> switchPanel(bookingBtn, new UserBookingsFrame(user)));
-        notifyBtn.addActionListener(e -> switchPanel(notifyBtn, createNotificationPanel()));
+        notifyBtn.addActionListener(e -> switchPanel(notifyBtn, new NotificationPanel(user.getId())));
         settingsBtn.addActionListener(e -> switchPanel(settingsBtn, new SettingsPanel(user)));
 
         logoutBtn.addActionListener(e -> {

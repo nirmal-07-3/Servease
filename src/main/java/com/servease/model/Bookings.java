@@ -8,6 +8,7 @@ public class Bookings {
     private int service_id;
     private Date booking_date;
     private String status;
+    private double price;
 
 
     private String serviceName;
@@ -29,6 +30,14 @@ public class Bookings {
     }
 
     public Bookings() {
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 
     public int getId() {

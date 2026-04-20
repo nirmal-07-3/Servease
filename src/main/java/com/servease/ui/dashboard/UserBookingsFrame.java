@@ -1,9 +1,8 @@
 package com.servease.ui.dashboard;
 
 import com.servease.controller.BookingController;
-import com.servease.controller.ServiceController;
+import com.servease.controller.ReviewController;
 import com.servease.model.Bookings;
-import com.servease.model.Service;
 import com.servease.model.User;
 
 import javax.swing.*;
@@ -16,11 +15,16 @@ public class UserBookingsFrame extends JPanel {
     private User user;
     private JTable table;
     private DefaultTableModel model;
-    private BookingController controller;
+
+    private BookingController bookingController;
+    private ReviewController reviewController;
 
     public UserBookingsFrame(User user) {
+
         this.user = user;
-        this.controller = new BookingController();
+
+        bookingController = new BookingController();
+        reviewController = new ReviewController();
 
         setLayout(new BorderLayout());
         setBackground(new Color(245,247,250));
@@ -31,6 +35,7 @@ public class UserBookingsFrame extends JPanel {
 
     // ===== HEADER =====
     private JPanel createHeader() {
+
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setBackground(Color.WHITE);
@@ -48,14 +53,14 @@ public class UserBookingsFrame extends JPanel {
         return header;
     }
 
-    // ===== TABLE SECTION =====
+    // ===== TABLE =====
     private JPanel createTableSection() {
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(new Color(245,247,250));
         panel.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
 
-        String[] cols = {"Booking ID","Service","Provider","Date & Time","Amount","Status","Action"};
+        String[] cols = {"Booking ID","Service","Provider","Date","Amount","Status","Action"};
 
         model = new DefaultTableModel(cols, 0);
         table = new JTable(model);
@@ -67,10 +72,7 @@ public class UserBookingsFrame extends JPanel {
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0,0));
 
-        // STATUS COLOR
         table.getColumn("Status").setCellRenderer(new StatusRenderer());
-
-        // ACTION BUTTON
         table.getColumn("Action").setCellRenderer(new ButtonRenderer());
         table.getColumn("Action").setCellEditor(new ButtonEditor(new JCheckBox()));
 
@@ -84,36 +86,21 @@ public class UserBookingsFrame extends JPanel {
         return panel;
     }
 
-    // ===== LOAD DATA =====
+    // ===== LOAD =====
     private void loadBookings() {
 
         model.setRowCount(0);
 
-        // ===== CONTROLLERS =====
-        BookingController bookingController = new BookingController();
-        ServiceController serviceController = new ServiceController();
-
-        // ===== FETCH BOOKINGS =====
         List<Bookings> list = bookingController.getBookingsByUser(user.getId());
 
         for (Bookings b : list) {
 
-            // ===== FETCH SERVICE FOR PRICE =====
-            Service service = serviceController.getServiceById(b.getService_id());
-
-            String priceText = "₹ --";
-
-            if (service != null) {
-                priceText = "₹ " + service.getPrice();
-            }
-
-            // ===== ADD ROW =====
             model.addRow(new Object[]{
-                     b.getId(),
+                    b.getId(),
                     b.getServiceName(),
                     b.getProviderName(),
                     b.getBooking_date(),
-                    priceText,
+                    "₹ " + b.getPrice(),   // 🔥 FIXED PRICE
                     b.getStatus(),
                     getActionText(b.getStatus())
             });
@@ -121,17 +108,19 @@ public class UserBookingsFrame extends JPanel {
     }
 
     private String getActionText(String status) {
+
         switch (status.toLowerCase()) {
             case "completed": return "Review";
             case "pending": return "Cancel";
             case "in progress": return "Track";
-            case "cancelled": return "Re-book";
+            case "cancelled": return "-";
             default: return "-";
         }
     }
 
-    // ===== STATUS RENDERER =====
+    // ===== STATUS =====
     class StatusRenderer extends DefaultTableCellRenderer {
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
@@ -139,86 +128,147 @@ public class UserBookingsFrame extends JPanel {
 
             JLabel label = new JLabel(value.toString(), SwingConstants.CENTER);
             label.setOpaque(true);
-            label.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
             String status = value.toString().toLowerCase();
 
             switch (status) {
                 case "completed":
                     label.setBackground(new Color(200,230,201));
-                    label.setForeground(new Color(56,142,60));
                     break;
-
                 case "pending":
                     label.setBackground(new Color(255,224,178));
-                    label.setForeground(new Color(230,81,0));
                     break;
-
                 case "in progress":
                     label.setBackground(new Color(187,222,251));
-                    label.setForeground(new Color(25,118,210));
                     break;
-
                 case "cancelled":
                     label.setBackground(new Color(255,205,210));
-                    label.setForeground(new Color(198,40,40));
                     break;
-
-                default:
-                    label.setBackground(Color.LIGHT_GRAY);
             }
 
             return label;
         }
     }
 
-    // ===== BUTTON RENDERER =====
+    // ===== BUTTON =====
     class ButtonRenderer extends JButton implements TableCellRenderer {
-        public ButtonRenderer() {
-            setOpaque(true);
-        }
+
+        public ButtonRenderer() { setOpaque(true); }
 
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus,
                                                        int row, int column) {
 
             setText(value.toString());
-            setBackground(new Color(33,150,243));
             setForeground(Color.WHITE);
+
+            if (value.equals("Cancel")) setBackground(Color.RED);
+            else if (value.equals("Review")) setBackground(new Color(33,150,243));
+            else setBackground(Color.GRAY);
 
             return this;
         }
     }
 
-    // ===== BUTTON EDITOR =====
     class ButtonEditor extends DefaultCellEditor {
 
         private JButton button;
         private String label;
+        private int row;
 
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
-
             button = new JButton();
-            button.setFocusPainted(false);
-
-            button.addActionListener(e -> handleAction(label));
+            button.addActionListener(e -> handleAction());
         }
 
         public Component getTableCellEditorComponent(JTable table, Object value,
                                                      boolean isSelected, int row, int column) {
 
+            this.row = row;
             label = value.toString();
             button.setText(label);
             return button;
         }
 
-        public Object getCellEditorValue() {
-            return label;
-        }
+        public Object getCellEditorValue() { return label; }
 
-        private void handleAction(String action) {
-            JOptionPane.showMessageDialog(null, action + " clicked");
+        private void handleAction() {
+
+            int bookingId = (int) model.getValueAt(row, 0);
+
+            if (label.equals("Review")) {
+                openReviewDialog(bookingId);
+            }
+
+            else if (label.equals("Cancel")) {
+
+                int confirm = JOptionPane.showConfirmDialog(null,
+                        "Cancel booking?",
+                        "Confirm",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    bookingController.updateBookingStatus(bookingId, "Cancelled");
+                    loadBookings();
+                }
+            }
+
+            fireEditingStopped();
         }
+    }
+
+    // ===== SINGLE REVIEW UI =====
+    private void openReviewDialog(int bookingId) {
+
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Review");
+        dialog.setSize(350, 300);
+        dialog.setLocationRelativeTo(null);
+        dialog.setModal(true);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(15,15,15,15));
+
+        JTextField ratingField = new JTextField();
+        JTextArea commentArea = new JTextArea(4,20);
+
+        JButton submit = new JButton("Submit");
+
+        submit.addActionListener(e -> {
+
+            int rating = Integer.parseInt(ratingField.getText());
+            String comment = commentArea.getText();
+
+            // you already fixed DAO so service_id exists
+            List<Bookings> list = bookingController.getBookingsByUser(user.getId());
+
+            for (Bookings b : list) {
+                if (b.getId() == bookingId) {
+
+                    reviewController.addReview(
+                            bookingId,
+                            b.getService_id(),
+                            user.getId(),
+                            0,
+                            rating,
+                            comment
+                    );
+                    break;
+                }
+            }
+
+            dialog.dispose();
+        });
+
+        panel.add(new JLabel("Rating (1-5):"));
+        panel.add(ratingField);
+        panel.add(new JLabel("Comment:"));
+        panel.add(new JScrollPane(commentArea));
+        panel.add(submit);
+
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
 }

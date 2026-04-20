@@ -168,8 +168,8 @@ public class BookingDAO {
         try {
             Connection con = DBConnection.getConnection();
 
-            String sql = "SELECT b.id, b.booking_date, b.status, " +
-                    "s.name AS service_name, u.name AS provider_name " +
+            String sql = "SELECT b.id, b.service_id, b.booking_date, b.status, " +
+                    "s.name AS service_name, s.price, u.name AS provider_name " +
                     "FROM bookings b " +
                     "JOIN services s ON b.service_id = s.id " +
                     "JOIN users u ON s.provider_id = u.id " +
@@ -181,14 +181,18 @@ public class BookingDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
+
                 Bookings b = new Bookings();
 
                 b.setId(rs.getInt("id"));
+                b.setService_id(rs.getInt("service_id")); // 🔥 IMPORTANT FIX
                 b.setBooking_date(rs.getDate("booking_date"));
                 b.setStatus(rs.getString("status"));
-
                 b.setServiceName(rs.getString("service_name"));
                 b.setProviderName(rs.getString("provider_name"));
+
+                // OPTIONAL (store price directly)
+                b.setPrice(rs.getDouble("price"));
 
                 list.add(b);
             }
