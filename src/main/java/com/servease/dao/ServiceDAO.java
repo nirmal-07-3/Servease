@@ -229,8 +229,37 @@ public class ServiceDAO {
     }
 
 
+    public List<Object[]> getAllServicesWithProvider() {
 
+        List<Object[]> list = new ArrayList<>();
 
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = "SELECT s.id, s.name, s.description, s.price, u.name AS provider_name " +
+                    "FROM services s " +
+                    "JOIN users u ON s.provider_id = u.id";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getDouble("price"),
+                        rs.getString("provider_name"),
+                        "Delete"
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 
 
 }

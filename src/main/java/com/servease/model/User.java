@@ -7,6 +7,7 @@ public class User {
     private String password;
     private String phone;
     private String role;
+    private String status;
     private String profileImage;
 
     public User(){}
@@ -40,6 +41,14 @@ public class User {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public int getId() {

@@ -204,6 +204,79 @@ public class BookingDAO {
         return list;
     }
 
+    public List<Object[]> getAllBookingsAdmin() {
+
+        List<Object[]> list = new ArrayList<>();
+
+        try {
+            Connection con = DBConnection.getConnection();
+
+            String sql = "SELECT b.id, u.name AS user_name, s.name AS service_name, " +
+                    "b.booking_date, s.price, b.status " +
+                    "FROM bookings b " +
+                    "JOIN users u ON b.user_id = u.id " +
+                    "JOIN services s ON b.service_id = s.id";
+
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("user_name"),
+                        rs.getString("service_name"),
+                        rs.getDate("booking_date"),
+                        rs.getDouble("price"),
+                        rs.getString("status")
+
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+    public List<Object[]> getRecentBookings() {
+        List<Object[]> list = new ArrayList<>();
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT b.id,u.name,s.name,b.booking_date,s.price,b.status " +
+                    "FROM bookings b JOIN users u ON b.user_id=u.id " +
+                    "JOIN services s ON b.service_id=s.id LIMIT 5";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new Object[]{
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getDate(4),
+                        rs.getDouble(5),
+                        rs.getString(6)
+                });
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    public List<Object[]> getAllBookings() {
+        return getRecentBookings(); // simple reuse
+    }
+
+    public double getTotalRevenue() {
+        double total = 0;
+        try (Connection con = DBConnection.getConnection()) {
+            PreparedStatement ps = con.prepareStatement(
+                    "SELECT SUM(s.price) FROM bookings b JOIN services s ON b.service_id=s.id WHERE b.status='Completed'"
+            );
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) total = rs.getDouble(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return total;
+    }
+
 
     }
 
