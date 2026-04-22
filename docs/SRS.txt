@@ -1,0 +1,218 @@
+SOFTWARE REQUIREMENTS SPECIFICATION (SRS)
+Project: SERVEASE – Service Booking Platform
+1. INTRODUCTION
+1.1 Purpose
+
+The purpose of this document is to provide a detailed description of the Servease system. It includes functional and non-functional requirements, system behaviour, constraints, and operational details. This SRS is intended for developers, evaluators, and stakeholders to understand the system completely.
+
+1.2 Scope
+
+Servease is a desktop-based service booking platform that connects users with service providers. It allows users to browse services, book them, and provide feedback, while providers can manage services and bookings. An admin manages users, providers, services, and overall system operations.
+
+1.3 Definitions
+User: Customer who books services
+Provider: Person offering services
+Admin: System controller managing platform
+Booking: Reservation of a service
+Service: Offering provided by providers
+Review: Feedback given by users
+2. OVERALL DESCRIPTION
+2.1 Product Perspective
+
+Servease is a standalone Java Swing application connected to a relational database. It follows MVC architecture:
+
+UI Layer (Swing)
+Controller Layer
+Service Layer (Validation)
+DAO Layer (Database access)
+2.2 Product Features
+User registration & login
+Service browsing & booking
+Provider service management
+Booking tracking
+Review & rating system
+Notification system
+Admin dashboard & controls
+2.3 User Classes
+User Type	Description
+User	Books services
+Provider	Manages services & bookings
+Admin	Controls system
+2.4 Operating Environment
+Java (JDK 8+)
+MySQL Database
+Desktop environment (Windows)
+2.5 Constraints
+Internet required for DB connection
+Desktop-only (no mobile/web version)
+Basic security (no advanced encryption)
+3. SYSTEM FEATURES
+3.1 Authentication System
+Description
+
+Allows users, providers, and admin to log in and register.
+
+Functional Requirements
+Register new users/providers
+Login with email and password
+Role-based dashboard access
+3.2 User Module
+Features
+View services
+Book services
+View booking history
+Cancel bookings
+Give reviews & ratings
+Manage profile & image
+3.3 Provider Module
+Features
+Add/edit/delete services
+View bookings
+Update booking status
+Receive notifications
+View reviews
+3.4 Admin Module
+Features
+Dashboard with statistics
+Manage users (activate/suspend)
+Manage providers (approve/reject)
+Manage services (delete/control)
+Monitor bookings
+Admin profile settings
+3.5 Booking System
+Features
+Create booking
+Update status:
+Pending
+In Progress
+Completed
+Cancelled
+Track booking history
+3.6 Review System
+Features
+Users give ratings (1–5)
+Store reviews in DB
+Display average rating
+3.7 Notification System
+Features
+Notify provider on new booking
+Notify user on status update
+Mark notifications as read
+3.8 Settings Module
+Features
+Update name, email, phone
+Change password
+Upload profile image
+Preferences selection
+4. EXTERNAL INTERFACE REQUIREMENTS
+4.1 User Interface
+Java Swing GUI & Panel
+Sidebar navigation
+Tables for data display
+Buttons for actions
+Forms for input
+4.2 Hardware Interface
+Standard PC or laptop
+4.3 Software Interface
+MySQL database
+JDBC connection
+5. FUNCTIONAL REQUIREMENTS
+FR1: User Registration
+
+System must allow users to register.
+
+FR2: Login System
+
+System must authenticate users.
+
+FR3: Service Management
+
+Providers must manage services.
+
+FR4: Booking Management
+
+Users must book services.
+
+FR5: Review System
+
+Users must give ratings.
+
+FR6: Notification System
+
+System must send notifications.
+
+FR7: Admin Control
+
+Admin must manage all entities.
+
+6. NON-FUNCTIONAL REQUIREMENTS
+6.1 Performance
+Fast response time (<2 sec)
+6.2 Usability
+Simple UI
+Easy navigation
+6.3 Security
+Password hashing
+Role-based access
+6.4 Reliability
+System should not crash
+Data consistency maintained
+6.5 Maintainability
+Modular code structure
+7. DATABASE DESIGN (SUMMARY)
+USERS TABLE
+id
+name
+email
+password
+phone
+role
+status
+profile_image
+SERVICES TABLE
+id
+provider_id
+name
+description
+price
+BOOKINGS TABLE
+id
+user_id
+service_id
+booking_date
+status
+REVIEWS TABLE
+id
+user_id
+service_id
+rating
+comment
+NOTIFICATIONS TABLE
+id
+user_id / provider_id
+message
+is_read
+created_at
+8. SYSTEM WORKFLOW
+User registers/logs in
+User browses services
+User books service
+Provider receives notification
+Provider updates status
+User gives review
+Admin monitors system
+9. ASSUMPTIONS
+Users have basic computer knowledge
+Database is properly configured
+Icons/resources exist
+10. FUTURE ENHANCEMENTS
+Mobile application
+Payment gateway
+Chat system
+AI recommendations
+Advanced analytics
+11. CONCLUSION
+
+Servease is a complete service booking system with three roles: user, provider, and admin. It ensures smooth interaction, service management, and centralized control through a structured and scalable design.
+
+END OF DOCUMENT
