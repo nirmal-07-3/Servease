@@ -241,7 +241,7 @@ public class UserBookingsFrame extends JPanel {
             int rating = Integer.parseInt(ratingField.getText());
             String comment = commentArea.getText();
 
-            // you already fixed DAO so service_id exists
+
             List<Bookings> list = bookingController.getBookingsByUser(user.getId());
 
             for (Bookings b : list) {

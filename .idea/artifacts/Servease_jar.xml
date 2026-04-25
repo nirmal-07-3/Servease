@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Servease:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Servease_jar</output-path>
+    <root id="archive" name="Servease.jar">
+      <element id="module-output" name="Servease" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../Downloads/mysql-connector-j-8.0.33.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
