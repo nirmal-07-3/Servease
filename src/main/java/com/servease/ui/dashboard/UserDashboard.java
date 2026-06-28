@@ -157,9 +157,7 @@ public class UserDashboard extends JFrame {
         top.setBackground(Color.WHITE);
         top.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
-        JTextField search = new JTextField();
-        search.setPreferredSize(new Dimension(300, 35));
-        search.setBorder(BorderFactory.createTitledBorder("Search services"));
+
 
         JLabel userLabel = new JLabel(" " + user.getName());
 
@@ -174,7 +172,7 @@ public class UserDashboard extends JFrame {
             System.out.println("User icon missing");
         }
 
-        top.add(search, BorderLayout.WEST);
+
         top.add(userLabel, BorderLayout.EAST);
 
         // ===== CARDS =====

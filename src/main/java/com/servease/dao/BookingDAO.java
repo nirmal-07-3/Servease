@@ -261,9 +261,7 @@ public class BookingDAO {
         return list;
     }
 
-    public List<Object[]> getAllBookings() {
-        return getRecentBookings(); // simple reuse
-    }
+   
 
     public double getTotalRevenue() {
         double total = 0;

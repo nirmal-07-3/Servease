@@ -180,7 +180,7 @@ public class ProviderDashboard extends JFrame {
         top.add(userLabel, BorderLayout.EAST);
 
         // ===== CARDS =====
-        JPanel cards = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        JPanel cards = new JPanel(new GridLayout(1,4,10,10));
         cards.setBackground(new Color(245,247,250));
 
         cards.add(createCard("icons/service.png", String.valueOf(totalServices), "Total Services"));

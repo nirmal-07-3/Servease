@@ -5,7 +5,7 @@ import com.servease.controller.UserController;
 import javax.swing.*;
 import java.awt.*;
 
-public class RegisterFrame extends JFrame {
+public class  RegisterFrame extends JFrame {
 
     public RegisterFrame(){
 

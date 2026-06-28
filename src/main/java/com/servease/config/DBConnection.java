@@ -16,15 +16,11 @@ public class DBConnection {
 
             Properties props = new Properties();
 
-            // ✅ CORRECT WAY (from resources)
             InputStream input = DBConnection.class
                     .getClassLoader()
                     .getResourceAsStream("config.properties");
 
-            if (input == null) {
-                System.out.println("❌ config.properties NOT FOUND");
-                return null;
-            }
+
 
             props.load(input);
 

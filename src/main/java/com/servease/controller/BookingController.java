@@ -14,10 +14,6 @@ public class BookingController {
         return bookingService.createBooking(bookings);
     }
 
-    public List<Object[]> getUserBookingsWithService(int userId) {
-        return bookingService.getUserBookingsWithService(userId);
-    }
-
     public List<Object[]> getBookingsByProvider(int userId) {
         return bookingService.getBookingsByProvider(userId);
     }
